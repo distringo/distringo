@@ -22,7 +22,7 @@
     "leaflet": "^1.7.1"
   },
   "devDependencies": {
-    "@types/leaflet": "^1.7.5",
+    "@types/leaflet": "^1.7.6",
     "copy-webpack-plugin": "^10.0.0",
     "html-webpack-plugin": "^5.5.0",
     "sass": "^1.43.4",
