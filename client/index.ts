@@ -30,7 +30,7 @@ export type Shapefile = {
 	data: string,
 }
 
-let shapefiles: Array<ShapefileSpec> = [
+const SHAPEFILES: Array<ShapefileSpec> = [
 	{
 		id: "tl_2010_18157_tabblock",
 		minZoom: 10.0,
@@ -43,31 +43,46 @@ let shapefiles: Array<ShapefileSpec> = [
 	},
 ];
 
+const DISTRINGO_DB = DB("distringo", 1);
+
+async function getShapefileOrInsert(id: string): Promise<Shapefile> {
+	if (await DISTRINGO_DB.then(db => db.getKey('shapefiles', id))) {
+		// Shapefile is already in the database.
+		return DISTRINGO_DB.then(async db => {
+			const tx = db.transaction('shapefiles', 'readonly')
+			const shapefile = tx.store.get(id)
+			await tx.done
+			return shapefile
+		})
+	} else {
+		// Shapefile needs to get loaded first.
+		const shapefileData = await API.shapefile(id).then(data => data.text())
+		return DISTRINGO_DB.then(async db => {
+			// Open a transaction...
+			const tx = db.transaction('shapefiles', 'readwrite')
+			// ...store the shapefile data...
+			await tx.store.add({ id: id, data: shapefileData })
+			// ...and close the transaction.
+			await tx.done
+			return {id: id, data: shapefileData}
+		})
+	}
+}
+
 // Pre-seed the database if it is not already set up.
 DB("distringo", 1).then((db) => {
-	shapefiles.forEach((shapefileSpec) => {
+	SHAPEFILES.forEach(async (shapefileSpec) => {
 
 		const id = shapefileSpec.id
 
-		const tx = db.transaction('shapefiles', 'readwrite')
+		console.log(`loading shapefile ${id}`)
 
-		tx.store.getKey(id).then(maybeKey => {
-			if (maybeKey !== undefined) {
-				console.debug(`skipping already-loaded shapefile ${id}`)
-			} else {
-				console.log(`loading shapefile ${shapefileSpec.id}`)
-				API.shapefile(id)
-					.then(data => data.text())
-					.then(data => tx.store.add({ id: id, data: data }))
-					.then(() => console.debug(`stored shapefile ${id}`))
-					.then(() => tx.store.get(id).then(shapefile => {
-						console.debug(`drawing shapefile ${shapefile.id}`)
-						const data = JSON.parse(shapefile.data)
-						L.geoJSON(data, {}).addTo(map)
-						console.debug(`finished drawing shapefile ${shapefile.id}`)
-					}))
-			}
-		}).then(() => tx.done)
+		getShapefileOrInsert(id).then(shapefile => {
+			console.log(`drawing shapefile ${shapefile.id}`)
+			const data = JSON.parse(shapefile.data)
+			L.geoJSON(data, {}).addTo(map)
+			console.debug(`finished drawing shapefile ${shapefile.id}`)
+		})
 	})
 })
 
