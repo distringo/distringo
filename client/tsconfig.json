@@ -10,6 +10,7 @@
       "dom"
     ],
     "allowJs": true,
+    "checkJs": true,
     "sourceMap": true,
   },
   "exclude": [
