@@ -10,5 +10,5 @@ clap = "2.34.0"
 geo = "0.17.0"
 geojson = { version = "0.22.0", features = ["geo-types"] }
 geo-types = "0.7.0"
-itertools = "0.10.1"
+itertools = "0.10.3"
 num-traits = "0.2.14"
