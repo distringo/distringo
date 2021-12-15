@@ -106,22 +106,11 @@ macro_rules! generate_fields_inner {
 	};
 }
 
-macro_rules! generate_fields {
-	($container_type:ident, $container_data_field:ident, $($name:ident $rest:tt),+) => {
-		$(
-			generate_fields_inner!($container_type, $container_data_field, $name, $rest);
-		)+
-	};
-}
-
 macro_rules! generate_field {
 	($container_type:ident, $container_data_field:ident, $name:ident $rest:tt) => {
 		generate_fields_inner!($container_type, $container_data_field, $name, $rest);
 	};
 }
-
-// generate_fields!(
-// 	GeographicalHeader, data,
 
 // Record codes
 generate_field!(GeographicalHeader, data, FILEID { @ + 0 w 6 - [pub, fileid e.g. "PLST"] });
