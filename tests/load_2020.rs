@@ -7,6 +7,18 @@ use fnv::FnvHashMap;
 /// Reads a packing list from
 #[test]
 fn main() -> distringo::Result<()> {
+	const TABLE_MAP: [distringo::Table; 6] = {
+		use distringo::{census2020::pl94_171::*, census2020::Table::Pl94_171, Table::Census2020};
+		[
+			Census2020(Pl94_171(P1)),
+			Census2020(Pl94_171(P2)),
+			Census2020(Pl94_171(P3)),
+			Census2020(Pl94_171(P4)),
+			Census2020(Pl94_171(H1)),
+			Census2020(Pl94_171(P5)),
+		]
+	};
+
 	simple_logger::SimpleLogger::new()
 		.with_level(log::LevelFilter::Trace)
 		.with_utc_timestamps()
@@ -22,53 +34,7 @@ fn main() -> distringo::Result<()> {
 			.join("data"),
 	);
 
-	let table_locations = {
-		let mut map = FnvHashMap::default();
-
-		map.insert(
-			distringo::Table::Census2020(distringo::census2020::Table::Pl94_171(
-				distringo::census2020::pl94_171::P1,
-			)),
-			vec![],
-		);
-
-		map.insert(
-			distringo::Table::Census2020(distringo::census2020::Table::Pl94_171(
-				distringo::census2020::pl94_171::P2,
-			)),
-			vec![],
-		);
-
-		map.insert(
-			distringo::Table::Census2020(distringo::census2020::Table::Pl94_171(
-				distringo::census2020::pl94_171::P3,
-			)),
-			vec![],
-		);
-
-		map.insert(
-			distringo::Table::Census2020(distringo::census2020::Table::Pl94_171(
-				distringo::census2020::pl94_171::P4,
-			)),
-			vec![],
-		);
-
-		map.insert(
-			distringo::Table::Census2020(distringo::census2020::Table::Pl94_171(
-				distringo::census2020::pl94_171::H1,
-			)),
-			vec![],
-		);
-
-		map.insert(
-			distringo::Table::Census2020(distringo::census2020::Table::Pl94_171(
-				distringo::census2020::pl94_171::P5,
-			)),
-			vec![],
-		);
-
-		map
-	};
+	let table_locations = TABLE_MAP.iter().map(|&table| (table, vec![])).collect();
 
 	let tabular_files = {
 		let mut map = FnvHashMap::default();
