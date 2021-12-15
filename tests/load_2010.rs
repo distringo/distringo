@@ -4,6 +4,7 @@ use distringo::Dataset;
 fn main() -> distringo::Result<()> {
 	simple_logger::SimpleLogger::new()
 		.with_level(log::LevelFilter::Trace)
+		.with_utc_timestamps()
 		.init()
 		.unwrap();
 
