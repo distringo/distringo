@@ -13,7 +13,9 @@ pub enum Table {
 pub use Table::{H1, P1, P2, P3, P4, P5};
 
 #[cfg(test)]
-const RI_GEO2018_2020_STYLE_EXAMPLE: &str = "PLST|RI|750|00|00|000|00|0019326|7500000US440070185003030|440070185003030|1|1|44|01219835|007|H4|01219781|80780|C5|01220079|||||||99999|99|99999999|80780|C5|01220079|018500|3|3030|9999|9|99999|99|99999999|999|99999|99|99999999|999999|9|99999|99|99999999|39300|1|148|99999|77200|1|715|99999|N|N||||01|||||020|||||051|||||443909|A||99999|99999|01200||1625|0|3030|Block 3030|S||0|0|+41.9866626|-071.4802535|BK||99999";
+const C2020_STYLE_EXAMPLES: [&str; 1] = [
+	"PLST|RI|750|00|00|000|00|0019326|7500000US440070185003030|440070185003030|1|1|44|01219835|007|H4|01219781|80780|C5|01220079|||||||99999|99|99999999|80780|C5|01220079|018500|3|3030|9999|9|99999|99|99999999|999|99999|99|99999999|999999|9|99999|99|99999999|39300|1|148|99999|77200|1|715|99999|N|N||||01|||||020|||||051|||||443909|A||99999|99999|01200||1625|0|3030|Block 3030|S||0|0|+41.9866626|-071.4802535|BK||99999"
+];
 
 macro_rules! generate_field_getter {
 	($container_type:ty, $container_data_field:ident, $name:ident, $width:literal, [ $vis:vis , $getter_name:ident #> $pty:ty ]) => {
@@ -32,9 +34,11 @@ macro_rules! generate_field_getter {
 
 		#[test]
 		fn $getter_name() {
-			let geo_header = <$container_type>::new(RI_GEO2018_2020_STYLE_EXAMPLE);
-			let expected = $expected;
-			assert_eq!(geo_header.$getter_name(), expected);
+			for example in C2020_STYLE_EXAMPLES {
+				let geo_header = <$container_type>::new(example);
+				let expected = $expected;
+				assert_eq!(geo_header.$getter_name(), expected);
+			}
 		}
 	};
 
@@ -56,8 +60,10 @@ macro_rules! generate_field_getter {
 
 		#[test]
 		fn $getter_name() {
-			let geo_header = <$container_type>::new(RI_GEO2018_2020_STYLE_EXAMPLE);
-			assert_eq!(geo_header.$getter_name(), $expected);
+			for example in C2020_STYLE_EXAMPLES {
+				let geo_header = <$container_type>::new(example);
+				assert_eq!(geo_header.$getter_name(), $expected);
+			}
 		}
 	};
 
@@ -78,8 +84,10 @@ macro_rules! generate_field_getter {
 
 		#[test]
 		fn $getter_name() {
-			let geo_header = <$container_type>::new(RI_GEO2018_2020_STYLE_EXAMPLE);
-			assert_eq!(geo_header.$getter_name(), $expected);
+			for example in C2020_STYLE_EXAMPLES {
+				let geo_header = <$container_type>::new(example);
+				assert_eq!(geo_header.$getter_name(), $expected);
+			}
 		}
 	};
 }
