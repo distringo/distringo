@@ -382,6 +382,7 @@ dependencies = [
  "once_cell",
  "pretty_env_logger",
  "regex",
+ "semver",
  "serde",
  "serde_yaml",
  "simple_logger",
