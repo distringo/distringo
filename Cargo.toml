@@ -19,7 +19,7 @@ serde = { version = "1.0.131", features = ["derive"] }
 [dev-dependencies]
 criterion = "0.3.5"
 simple_logger = "1.15.0"
-serde_yaml = "0.8.21"
+serde_yaml = "0.8.23"
 
 [[bench]]
 name = "logical_record_position_index"
