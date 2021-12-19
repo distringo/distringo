@@ -372,14 +372,22 @@ dependencies = [
  "criterion",
  "csv",
  "fnv",
+ "futures",
  "geo 0.18.0",
  "geojson",
+ "http",
+ "hyper",
  "lazy_static",
  "log",
+ "once_cell",
+ "pretty_env_logger",
  "regex",
  "serde",
  "serde_yaml",
  "simple_logger",
+ "tokio",
+ "tokio-stream",
+ "warp",
 ]
 
 [[package]]
@@ -1363,27 +1371,6 @@ dependencies = [
  "ryu",
  "serde",
  "yaml-rust",
-]
-
-[[package]]
-name = "server"
-version = "0.1.0"
-dependencies = [
- "config",
- "distringo",
- "futures",
- "geo 0.18.0",
- "geojson",
- "http",
- "hyper",
- "lazy_static",
- "log",
- "once_cell",
- "pretty_env_logger",
- "serde",
- "tokio",
- "tokio-stream",
- "warp",
 ]
 
 [[package]]
