@@ -6,6 +6,7 @@ fn get_settings() -> core::result::Result<config::Config, config::ConfigError> {
 
 	let mut settings = Config::default();
 
+	settings.set_default("version", env!("CARGO_PKG_VERSION"))?;
 	settings.set_default("server.host", "::")?;
 	settings.set_default("server.port", 2020)?;
 
@@ -52,7 +53,8 @@ async fn main() -> Result<()> {
 
 	let settings = get_settings()?;
 
-	let mut plan: server::ExecutionPlan = server::ExecutionPlan::try_from(settings)?;
+	let mut plan: server::ExecutionPlan = server::ExecutionPlan::from(settings);
+	plan.validate().await?;
 	plan.prepare()?;
 	plan.execute().await
 }

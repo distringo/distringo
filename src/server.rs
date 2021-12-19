@@ -21,17 +21,44 @@ async fn handle_rejection(
 pub struct ExecutionPlan(config::Config);
 
 #[derive(thiserror::Error, Debug)]
-pub enum AppConfigError {}
+pub enum AppConfigError {
+	#[error("inner configuration error")]
+	Config(#[from] config::ConfigError),
+	#[error("version parse error")]
+	Semver(#[from] semver::Error),
 
-impl TryFrom<config::Config> for ExecutionPlan {
-	type Error = AppConfigError;
-	fn try_from(config: config::Config) -> core::result::Result<Self, Self::Error> {
-		Ok(Self(config))
+	#[error("configuration version does not meet requirements")]
+	InvalidVersion,
+}
+
+impl From<config::Config> for ExecutionPlan {
+	fn from(config: config::Config) -> Self {
+		Self(config)
 	}
 }
 
 impl ExecutionPlan {
-	pub fn validate(&self) -> Result<(), AppConfigError> {
+	fn validate_version(version: &str) -> Result<(), AppConfigError> {
+		const VERSION_REQUIREMENT: &'static str = "~0.0.0";
+
+		let requirement = semver::VersionReq::parse(VERSION_REQUIREMENT)
+			.expect("internally-generated version requirement was invalid");
+
+		let version: semver::Version = version.parse()?;
+
+		if !requirement.matches(&version) {
+			return Err(AppConfigError::InvalidVersion);
+		} else {
+			return Ok(());
+		}
+	}
+
+	pub async fn validate(&self) -> Result<(), AppConfigError> {
+		let config = &self.0;
+		// Verify that the version is valid.
+		let config_version = config.get_str("version")?;
+		Self::validate_version(&config_version)?;
+
 		Ok(())
 	}
 
