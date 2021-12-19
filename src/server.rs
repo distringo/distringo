@@ -31,7 +31,7 @@ impl TryFrom<config::Config> for ExecutionPlan {
 }
 
 impl ExecutionPlan {
-	pub fn validate(&self) -> Result<()> {
+	pub fn validate(&self) -> Result<(), AppConfigError> {
 		Ok(())
 	}
 
