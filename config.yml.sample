@@ -1,25 +1,35 @@
+version: "~0"
+
 server:
-  host: '::'
+  host: "::"
   port: 2020
+  data: ./data/
 
 datasets:
   in2010-pl94_171:
-    packing_list: in2010.pl.prd.packinglist.txt
-    tables:
-    - p1: { schema: "schemas/2010/pl94_171/p1.yml" }
-    - p2: { schema: "schemas/2010/pl94_171/p2.yml" }
-    - p3: { schema: "schemas/2010/pl94_171/p3.yml" }
-    - p4: { schema: "schemas/2010/pl94_171/p4.yml" }
-    - h1: { schema: "schemas/2010/pl94_171/h1.yml" }
+    schema: 2010/pl94_171.yaml
+    files:
+      geo: ingeo2010.pl
+      file01: in000012010.pl
+      file02: in000022010.pl
+      file03: in000032010.pl
 
 shapefiles:
-  tippecanoe_tabblock_2010:
-    type: tabblock
-    file: tl_2010_18157_tabblock10.geojson
+  tl_2010_18157_tabblock:
+    type: tabular_block
+    file: data/tl_2010_18157_tabblock10.min.geojson
 
 sessions:
   tippecanoe-2010:
+    name: "tippecanoe county 2010"
     datasets:
-    - in2010-pl94_171
+      - in2010-pl94_171
     shapefiles:
-    - tippecanoe_tabblock_2010
+      - tl_2010_18157_tabblock
+
+  tippecanoe-2020
+    name: "tippecanoe county 2020"
+    datasets:
+      - in2020-pl94_171
+    shapefiles:
+      - tl_2020_18157_tabblock

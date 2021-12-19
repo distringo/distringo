@@ -1,0 +1,20 @@
+version: "~0"
+
+files:
+  - geo
+  - file01
+  - file02
+  - file03
+
+type:
+  originator: census
+  format: flat
+
+fields:
+  - { name: "FILEID", length: 6, start: 0, type: AN }
+  - { name: "STUSAB", length: 2, start: 6, type: A }
+  - { name: "SUMLEV", length: 3, start: 8, type: AN }
+  - { name: "GEOCOMP", length: 2, start: 11, type: AN }
+  - { name: "CHARITER", length: 3, start: 13, type: AN }
+  - { name: "CIFSN", length: 2, start: 16, type: AN }
+  - { name: "LOGRECNO ", length: 7, start: 18, type: N }
