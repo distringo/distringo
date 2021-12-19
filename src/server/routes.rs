@@ -2,7 +2,7 @@ use warp::{filters::BoxedFilter, fs, path, Filter, Reply};
 
 pub mod api;
 
-pub fn routes(cfg: &config::Config) -> distringo::Result<BoxedFilter<(impl Reply,)>> {
+pub fn routes(cfg: &config::Config) -> crate::Result<BoxedFilter<(impl Reply,)>> {
 	let slash = warp::get()
 		.and(path::end())
 		.and(fs::file("./dist/index.html"));

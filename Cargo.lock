@@ -385,6 +385,7 @@ dependencies = [
  "serde",
  "serde_yaml",
  "simple_logger",
+ "thiserror",
  "tokio",
  "tokio-stream",
  "warp",

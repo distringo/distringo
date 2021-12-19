@@ -25,7 +25,7 @@ mod cache {
 					let value: config::Value = value.clone();
 					// TODO(rye): handle error a bit better
 					let config: ShapefileConfiguration = value.try_into().expect("invalid configuration");
-					let shapefile: distringo::Result<Shapefile> = config.try_into();
+					let shapefile: crate::Result<Shapefile> = config.try_into();
 					if let Ok(shapefile) = shapefile {
 						Some((id.to_string(), shapefile))
 					} else {
@@ -46,7 +46,7 @@ mod cache {
 
 pub fn shapefiles(
 	cfg: &config::Config,
-) -> distringo::Result<warp::filters::BoxedFilter<(impl warp::Reply,)>> {
+) -> crate::Result<warp::filters::BoxedFilter<(impl warp::Reply,)>> {
 	let loaded_shapefiles: &'static HashMap<String, Shapefile> = cache::get_cache(cfg);
 
 	// GET /api/v0/shapefiles
@@ -73,9 +73,7 @@ pub mod v0 {
 	pub use super::shapefiles;
 }
 
-pub fn api(
-	cfg: &config::Config,
-) -> distringo::Result<warp::filters::BoxedFilter<(impl warp::Reply,)>> {
+pub fn api(cfg: &config::Config) -> crate::Result<warp::filters::BoxedFilter<(impl warp::Reply,)>> {
 	let shapefiles = shapefiles(cfg)?;
 
 	let api = warp::path("api");

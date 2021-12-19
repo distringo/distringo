@@ -1,4 +1,4 @@
-pub use distringo::Result;
+use crate::Result;
 
 pub mod routes;
 
@@ -18,16 +18,23 @@ async fn handle_rejection(
 		))
 	}
 }
-
 pub struct ExecutionPlan(config::Config);
 
-impl From<config::Config> for ExecutionPlan {
-	fn from(config: config::Config) -> Self {
-		Self(config)
+#[derive(thiserror::Error, Debug)]
+pub enum AppConfigError {}
+
+impl TryFrom<config::Config> for ExecutionPlan {
+	type Error = AppConfigError;
+	fn try_from(config: config::Config) -> core::result::Result<Self, Self::Error> {
+		Ok(Self(config))
 	}
 }
 
 impl ExecutionPlan {
+	pub fn validate(&self) -> Result<()> {
+		Ok(())
+	}
+
 	pub fn prepare(&self) -> Result<()> {
 		// TODO(rye): Instead of doing nothing, perform a dry run of creating the
 		// routes here so as to early-die if something is amiss.
@@ -46,11 +53,11 @@ impl ExecutionPlan {
 			let host: IpAddr = config
 				.get_str("server.host")?
 				.parse()
-				.map_err(|_| distringo::Error::InvalidServerHost)?;
+				.map_err(|_| crate::RuntimeError::InvalidServerHost)?;
 			let port: u16 = config
 				.get_int("server.port")?
 				.try_into()
-				.map_err(|_| distringo::Error::InvalidServerPort)?;
+				.map_err(|_| crate::RuntimeError::InvalidServerPort)?;
 
 			SocketAddr::new(host, port)
 		};

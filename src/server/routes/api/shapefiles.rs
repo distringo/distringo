@@ -40,8 +40,8 @@ impl<'buffer> futures::Stream for ByteChunkStream<'buffer> {
 
 #[derive(Debug)]
 pub struct Shapefile {
-	ty: ShapefileType,
-	contents: GeoJson,
+	//ty: ShapefileType,
+	//contents: GeoJson,
 	data: String,
 }
 
@@ -53,20 +53,24 @@ pub struct ShapefileConfiguration {
 }
 
 impl Shapefile {
-	pub fn from_file<P: AsRef<Path>>(ty: ShapefileType, path: P) -> distringo::Result<Self> {
+	pub fn from_file<P: AsRef<Path>>(ty: ShapefileType, path: P) -> crate::Result<Self> {
 		let contents = std::fs::read_to_string(path)?.parse::<GeoJson>()?;
 
 		// TODO(rye): Avoid re-allocating as a String by having a more "streamable" result.
 		let data = contents.to_string();
 
-		Ok(Self { ty, contents, data })
+		Ok(Self {
+			// ty,
+			// contents,
+			data,
+		})
 	}
 }
 
 impl TryFrom<ShapefileConfiguration> for Shapefile {
-	type Error = distringo::Error;
+	type Error = crate::RuntimeError;
 
-	fn try_from(sc: ShapefileConfiguration) -> distringo::Result<Self> {
+	fn try_from(sc: ShapefileConfiguration) -> crate::Result<Self> {
 		Self::from_file(sc.ty, sc.file)
 	}
 }
@@ -114,9 +118,9 @@ mod tests {
 		fn generate_id_and_shapefiles() -> (String, &'static HashMap<String, Shapefile>) {
 			let contents = GeoJson::Geometry(Geometry::new(Point(vec![0.0_f64, 0.0_f64])));
 			let shapefile = Shapefile {
-				ty: ShapefileType::TabularBlock,
+				//ty: ShapefileType::TabularBlock,
 				data: contents.to_string(),
-				contents,
+				//contents,
 			};
 
 			let id = "id".to_string();
