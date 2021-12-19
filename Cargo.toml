@@ -4,7 +4,7 @@ publish = false
 version = "0.1.0"
 authors = ["Kristofer Rye <kristofer.rye@gmail.com>"]
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 config = { version = "0.11.0", default_features = false, features = ["json", "yaml"] }

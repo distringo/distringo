@@ -41,8 +41,6 @@ impl ExecutionPlan {
 		use std::net::{IpAddr, SocketAddr};
 
 		let socket = {
-			use core::convert::TryInto;
-
 			let config: &config::Config = &self.0;
 
 			let host: IpAddr = config
