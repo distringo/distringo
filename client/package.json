@@ -21,7 +21,7 @@
   "dependencies": {
     "idb": "^7.0.0",
     "leaflet": "^1.7.1",
-    "@types/leaflet": "^1.7.7",
+    "@types/leaflet": "^1.7.8",
     "@types/geojson": "^7946.0.8"
   },
   "devDependencies": {
