@@ -190,7 +190,7 @@ mod tests {
 		fn not_found_returns_404() {
 			let (_id, map) = generate_id_and_shapefiles();
 
-			let response = super::super::show(map, &"<some unknown id>".to_string());
+			let response = super::super::show(map, "<some unknown id>");
 
 			assert_eq!(response.status(), hyper::StatusCode::NOT_FOUND);
 		}
