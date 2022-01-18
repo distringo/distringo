@@ -39,7 +39,7 @@ impl From<config::Config> for ExecutionPlan {
 
 impl ExecutionPlan {
 	fn validate_version(version: &str) -> Result<(), AppConfigError> {
-		const VERSION_REQUIREMENT: &'static str = "~0.0.0";
+		const VERSION_REQUIREMENT: &str = "~0.0.0";
 
 		let requirement = semver::VersionReq::parse(VERSION_REQUIREMENT)
 			.expect("internally-generated version requirement was invalid");
