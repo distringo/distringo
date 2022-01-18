@@ -47,9 +47,9 @@ impl ExecutionPlan {
 		let version: semver::Version = version.parse()?;
 
 		if !requirement.matches(&version) {
-			return Err(AppConfigError::InvalidVersion);
+			Err(AppConfigError::InvalidVersion)
 		} else {
-			return Ok(());
+			Ok(())
 		}
 	}
 
