@@ -55,6 +55,7 @@ impl ExecutionPlan {
 
 	pub async fn validate(&self) -> Result<(), AppConfigError> {
 		let config = &self.0;
+
 		// Verify that the version is valid.
 		let config_version = config.get_str("version")?;
 		Self::validate_version(&config_version)?;

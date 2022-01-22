@@ -53,7 +53,7 @@ pub struct ShapefileConfiguration {
 }
 
 impl Shapefile {
-	pub fn from_file<P: AsRef<Path>>(ty: ShapefileType, path: P) -> crate::Result<Self> {
+	pub fn from_file<P: AsRef<Path>>(_ty: ShapefileType, path: P) -> crate::Result<Self> {
 		let contents = std::fs::read_to_string(path)?.parse::<GeoJson>()?;
 
 		// TODO(rye): Avoid re-allocating as a String by having a more "streamable" result.
@@ -105,10 +105,10 @@ pub fn show(
 
 #[cfg(test)]
 mod tests {
-	use super::{Shapefile, ShapefileType};
+	use super::Shapefile;
 	#[cfg(test)]
 	mod show {
-		use super::{Shapefile, ShapefileType};
+		use super::Shapefile;
 		use geojson::{GeoJson, Geometry, Value::Point};
 		use once_cell::sync::OnceCell;
 		use std::collections::HashMap;
