@@ -27,7 +27,7 @@ warp = { version = "0.3.2", features = ["compression"] }
 
 [dev-dependencies]
 criterion = "0.3.5"
-simple_logger = "1.15.0"
+simple_logger = "2.1.0"
 serde_yaml = "0.8.21"
 
 [[bench]]
