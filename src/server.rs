@@ -60,6 +60,12 @@ impl ExecutionPlan {
 		let config_version = config.get_str("version")?;
 		Self::validate_version(&config_version)?;
 
+		// Load up all the dataset configurations.
+
+		for (identifier, value) in config.get_table("datasets")? {
+			println!("{:?}, {:?}", identifier, value);
+		}
+
 		Ok(())
 	}
 
