@@ -35,6 +35,9 @@ pub enum RuntimeError {
 	#[error("invalid configuration")]
 	Configuration(#[from] server::AppConfigError),
 
+	#[error("web server internal error")]
+	Hyper(#[from] hyper::Error),
+
 	#[error("invalid server host")]
 	InvalidServerHost,
 	#[error("invalid server port")]
@@ -49,7 +52,9 @@ async fn main() -> Result<()> {
 		std::env::set_var("DISTRINGO_LOG", "info");
 	}
 
-	pretty_env_logger::init_custom_env("DISTRINGO_LOG");
+	let filter = tracing_subscriber::filter::EnvFilter::from_env("DISTRINGO_LOG");
+
+	tracing_subscriber::fmt().with_env_filter(filter).init();
 
 	let settings = get_settings()?;
 

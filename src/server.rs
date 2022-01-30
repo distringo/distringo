@@ -1,23 +1,12 @@
+use axum::{error_handling::HandleErrorLayer, routing::get};
+use http::StatusCode;
+use tower::{BoxError, ServiceBuilder};
+use tower_http::{add_extension::AddExtensionLayer, trace::TraceLayer};
+
 use crate::Result;
 
-pub mod routes;
+// pub mod routes;
 
-async fn handle_rejection(
-	err: warp::Rejection,
-) -> core::result::Result<impl warp::Reply, core::convert::Infallible> {
-	if err.is_not_found() {
-		Ok(warp::reply::with_status(
-			warp::reply::html(include_str!("404.html")),
-			http::StatusCode::NOT_FOUND,
-		))
-	} else {
-		log::warn!("unhandled rejection: {:?}", err);
-		Ok(warp::reply::with_status(
-			warp::reply::html(include_str!("500.html")),
-			http::StatusCode::INTERNAL_SERVER_ERROR,
-		))
-	}
-}
 pub struct ExecutionPlan(config::Config);
 
 #[derive(thiserror::Error, Debug)]
@@ -35,6 +24,10 @@ impl From<config::Config> for ExecutionPlan {
 	fn from(config: config::Config) -> Self {
 		Self(config)
 	}
+}
+
+async fn ping_handler() -> Result<String, StatusCode> {
+	Ok("pong".to_string())
 }
 
 impl ExecutionPlan {
@@ -62,9 +55,9 @@ impl ExecutionPlan {
 
 		// Load up all the dataset configurations.
 
-		for (identifier, value) in config.get_table("datasets")? {
-			println!("{:?}, {:?}", identifier, value);
-		}
+		// for (identifier, value) in config.get_table("datasets")? {
+		// 	println!("{:?}, {:?}", identifier, value);
+		// }
 
 		Ok(())
 	}
@@ -81,6 +74,8 @@ impl ExecutionPlan {
 	pub async fn execute(&mut self) -> Result<()> {
 		use std::net::{IpAddr, SocketAddr};
 
+		log::trace!("Executing Execution Plan");
+
 		let socket = {
 			let config: &config::Config = &self.0;
 
@@ -96,7 +91,30 @@ impl ExecutionPlan {
 			SocketAddr::new(host, port)
 		};
 
-		warp::serve(routes::routes(&self.0)?).run(socket).await;
+		tracing::debug!("socket: {:?}", socket);
+
+		let error_handler = tower::ServiceBuilder::new()
+			.layer(HandleErrorLayer::new(|error: BoxError| async move {
+				if error.is::<tower::timeout::error::Elapsed>() {
+					Ok(StatusCode::REQUEST_TIMEOUT)
+				} else {
+					Err((
+						StatusCode::INTERNAL_SERVER_ERROR,
+						format!("Unhandled internal error: {}", error),
+					))
+				}
+			}))
+			.timeout(core::time::Duration::from_secs(10))
+			.layer(TraceLayer::new_for_http())
+			.into_inner();
+
+		let router = axum::Router::new()
+			.route("/ping", get(ping_handler))
+			.layer(error_handler);
+
+		axum::Server::bind(&socket)
+			.serve(router.into_make_service())
+			.await?;
 
 		Ok(())
 	}
