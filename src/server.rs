@@ -1,7 +1,7 @@
 use axum::{error_handling::HandleErrorLayer, routing::get};
 use http::StatusCode;
-use tower::{BoxError, ServiceBuilder};
-use tower_http::{add_extension::AddExtensionLayer, trace::TraceLayer};
+use tower::BoxError;
+use tower_http::trace::TraceLayer;
 
 use crate::Result;
 
