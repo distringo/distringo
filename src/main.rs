@@ -48,13 +48,11 @@ type Result<T, E = RuntimeError> = core::result::Result<T, E>;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-	if std::env::var("DISTRINGO_LOG").ok().is_none() {
-		std::env::set_var("DISTRINGO_LOG", "info");
+	// Set up logging.
+	{
+		let filter = tracing_subscriber::filter::EnvFilter::from_env("DISTRINGO_LOG");
+		tracing_subscriber::fmt().with_env_filter(filter).init();
 	}
-
-	let filter = tracing_subscriber::filter::EnvFilter::from_env("DISTRINGO_LOG");
-
-	tracing_subscriber::fmt().with_env_filter(filter).init();
 
 	let settings = get_settings()?;
 

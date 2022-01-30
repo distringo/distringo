@@ -26,6 +26,7 @@ impl From<config::Config> for ExecutionPlan {
 	}
 }
 
+#[tracing::instrument]
 async fn ping_handler() -> Result<String, StatusCode> {
 	Ok("pong".to_string())
 }
