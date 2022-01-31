@@ -50,7 +50,9 @@ type Result<T, E = RuntimeError> = core::result::Result<T, E>;
 async fn main() -> Result<()> {
 	// Set up logging.
 	{
-		let filter = tracing_subscriber::filter::EnvFilter::from_env("DISTRINGO_LOG");
+		use tracing_subscriber::filter::EnvFilter;
+
+		let filter = EnvFilter::from_env("DISTRINGO_LOG");
 		tracing_subscriber::fmt().with_env_filter(filter).init();
 	}
 
