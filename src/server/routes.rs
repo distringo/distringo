@@ -12,6 +12,11 @@ async fn ping() -> Result<String, StatusCode> {
 	Ok("pong".to_string())
 }
 
+#[tracing::instrument]
+async fn router_fallback(uri: Uri) -> impl IntoResponse {
+	(StatusCode::NOT_FOUND, format!("uri {} not found", uri))
+}
+
 pub(super) fn app_router(config: &config::Config) -> Result<axum::Router, RuntimeError> {
 	let error_handler = tower::ServiceBuilder::new()
 		.layer(HandleErrorLayer::new(|error: BoxError| async move {
@@ -30,7 +35,8 @@ pub(super) fn app_router(config: &config::Config) -> Result<axum::Router, Runtim
 
 	let router = axum::Router::new()
 		.route("/ping", get(ping))
-		.layer(error_handler);
+		.layer(error_handler)
+		.fallback(router_fallback.into_service());
 
 	Ok(router)
 }
