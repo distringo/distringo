@@ -47,10 +47,14 @@ impl ExecutionPlan {
 		Self::validate_version(&config_version)?;
 
 		// Load up all the dataset configurations.
+		for (identifier, value) in config.get_table("datasets")? {
+			println!("{:?}, {:?}", identifier, value);
+		}
 
-		// for (identifier, value) in config.get_table("datasets")? {
-		// 	println!("{:?}, {:?}", identifier, value);
-		// }
+		// Load up all the shapefile cofigurations.
+		for (identifier, value) in config.get_table("shapefiles")? {
+			println!("{:?}, {:?}", identifier, value);
+		}
 
 		Ok(())
 	}

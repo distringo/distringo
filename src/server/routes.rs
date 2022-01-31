@@ -7,6 +7,8 @@ use tower_http::trace::TraceLayer;
 
 use crate::RuntimeError;
 
+mod shapefiles;
+
 #[tracing::instrument]
 async fn ping() -> Result<String, StatusCode> {
 	Ok("pong".to_string())
@@ -35,6 +37,7 @@ pub(super) fn app_router(config: &config::Config) -> Result<axum::Router, Runtim
 
 	let router = axum::Router::new()
 		.route("/ping", get(ping))
+		.nest("/shapefiles", shapefiles::router(config))
 		.layer(error_handler)
 		.fallback(router_fallback.into_service());
 
