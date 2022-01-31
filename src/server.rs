@@ -5,7 +5,8 @@ use tower_http::trace::TraceLayer;
 
 use crate::Result;
 
-// pub mod routes;
+mod routes;
+use routes::*;
 
 pub struct ExecutionPlan(config::Config);
 
@@ -24,11 +25,6 @@ impl From<config::Config> for ExecutionPlan {
 	fn from(config: config::Config) -> Self {
 		Self(config)
 	}
-}
-
-#[tracing::instrument]
-async fn ping_handler() -> Result<String, StatusCode> {
-	Ok("pong".to_string())
 }
 
 impl ExecutionPlan {
@@ -77,9 +73,9 @@ impl ExecutionPlan {
 
 		log::trace!("Executing Execution Plan");
 
-		let socket = {
-			let config: &config::Config = &self.0;
+		let config: &config::Config = &self.0;
 
+		let socket = {
 			let host: IpAddr = config
 				.get_str("server.host")?
 				.parse()
@@ -94,24 +90,7 @@ impl ExecutionPlan {
 
 		tracing::debug!("socket: {:?}", socket);
 
-		let error_handler = tower::ServiceBuilder::new()
-			.layer(HandleErrorLayer::new(|error: BoxError| async move {
-				if error.is::<tower::timeout::error::Elapsed>() {
-					Ok(StatusCode::REQUEST_TIMEOUT)
-				} else {
-					Err((
-						StatusCode::INTERNAL_SERVER_ERROR,
-						format!("Unhandled internal error: {}", error),
-					))
-				}
-			}))
-			.timeout(core::time::Duration::from_secs(10))
-			.layer(TraceLayer::new_for_http())
-			.into_inner();
-
-		let router = axum::Router::new()
-			.route("/ping", get(ping_handler))
-			.layer(error_handler);
+		let router = routes::app_router(config)?;
 
 		axum::Server::bind(&socket)
 			.serve(router.into_make_service())
