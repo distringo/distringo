@@ -1,12 +1,6 @@
-use axum::{error_handling::HandleErrorLayer, routing::get};
-use http::StatusCode;
-use tower::BoxError;
-use tower_http::trace::TraceLayer;
-
 use crate::Result;
 
 mod routes;
-use routes::*;
 
 pub struct ExecutionPlan(config::Config);
 
