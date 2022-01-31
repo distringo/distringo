@@ -1,3 +1,5 @@
+use std::net::{IpAddr, SocketAddr};
+
 use crate::Result;
 
 mod routes;
@@ -62,25 +64,28 @@ impl ExecutionPlan {
 		Ok(())
 	}
 
-	pub async fn execute(&mut self) -> Result<()> {
-		use std::net::{IpAddr, SocketAddr};
+	fn bind_addr(&self) -> Result<SocketAddr> {
+		let host: IpAddr = self
+			.0
+			.get_str("server.host")?
+			.parse()
+			.map_err(|_| crate::RuntimeError::InvalidServerHost)?;
 
+		let port: u16 = self
+			.0
+			.get_int("server.port")?
+			.try_into()
+			.map_err(|_| crate::RuntimeError::InvalidServerPort)?;
+
+		Ok(SocketAddr::new(host, port))
+	}
+
+	pub async fn execute(&mut self) -> Result<()> {
 		log::trace!("Executing Execution Plan");
 
 		let config: &config::Config = &self.0;
 
-		let socket = {
-			let host: IpAddr = config
-				.get_str("server.host")?
-				.parse()
-				.map_err(|_| crate::RuntimeError::InvalidServerHost)?;
-			let port: u16 = config
-				.get_int("server.port")?
-				.try_into()
-				.map_err(|_| crate::RuntimeError::InvalidServerPort)?;
-
-			SocketAddr::new(host, port)
-		};
+		let socket = self.bind_addr()?;
 
 		tracing::debug!("socket: {:?}", socket);
 
