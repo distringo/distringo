@@ -1,11 +1,14 @@
-use axum::{error_handling::HandleErrorLayer, routing::get, BoxError};
-use http::StatusCode;
+use axum::{
+	error_handling::HandleErrorLayer, handler::Handler, response::IntoResponse, routing::get,
+	BoxError,
+};
+use http::{StatusCode, Uri};
 use tower_http::trace::TraceLayer;
 
 use crate::RuntimeError;
 
 #[tracing::instrument]
-async fn ping_handler() -> Result<String, StatusCode> {
+async fn ping() -> Result<String, StatusCode> {
 	Ok("pong".to_string())
 }
 
@@ -26,7 +29,7 @@ pub(super) fn app_router(config: &config::Config) -> Result<axum::Router, Runtim
 		.into_inner();
 
 	let router = axum::Router::new()
-		.route("/ping", get(ping_handler))
+		.route("/ping", get(ping))
 		.layer(error_handler);
 
 	Ok(router)
