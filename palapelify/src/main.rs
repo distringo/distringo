@@ -75,6 +75,8 @@ fn geojson_to_adjacency_map(geojson: &geojson::GeoJson) -> HashMap<&str, Vec<&st
 }
 
 fn main() {
+	tracing_subscriber::fmt::init();
+
 	let input_file: String = std::env::args().nth(1).expect("missing input file name");
 	let output_file: String = std::env::args().nth(2).expect("missing output file name");
 
