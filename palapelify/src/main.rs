@@ -1,16 +1,18 @@
-use std::collections::*;
-use std::fs::OpenOptions;
-use std::io::Read;
+use std::{
+	collections::*,
+	fs::{File, OpenOptions},
+	io::{Read, Write},
+};
 
 use itertools::Itertools;
 
-type FeatureGeometry<'x> = (&'x str, geo::Geometry<f64>);
+use geojson::{Feature, FeatureCollection, GeoJson};
 
 fn property_key_is_geoid_like(key: &str) -> bool {
 	&key[0..6] == "GEOID"
 }
 
-fn feature_id(feature: &geojson::Feature) -> Option<&str> {
+fn feature_id(feature: &Feature) -> Option<&str> {
 	const KNOWN_GEOID_KEYS: [&str; 2] = ["GEOID10", "GEOID20"];
 
 	if let Some(str) = KNOWN_GEOID_KEYS
@@ -34,7 +36,9 @@ fn feature_id(feature: &geojson::Feature) -> Option<&str> {
 	}
 }
 
-fn feature_to_geometry(feature: &geojson::Feature) -> FeatureGeometry {
+type FeatureGeometry<'x> = (&'x str, geo::Geometry<f64>);
+
+fn feature_to_geometry(feature: &Feature) -> FeatureGeometry {
 	use core::convert::TryInto;
 
 	let feature_id: &str = feature_id(feature).expect("could not determine feature identifier");
@@ -59,8 +63,7 @@ fn geometry_pair_to_adjacency_fragments<'x>(
 	let name_b: &str = pair.1 .0;
 
 	let overlaps: bool = {
-		use geo::bounding_rect::BoundingRect;
-		use geo::intersects::Intersects;
+		use geo::{bounding_rect::BoundingRect, intersects::Intersects};
 
 		let ls_a = &pair.0 .1;
 		let ls_b = &pair.1 .1;
@@ -83,13 +86,13 @@ fn geometry_pair_to_adjacency_fragments<'x>(
 	}
 }
 
-fn geojson_to_adjacency_map(geojson: &geojson::GeoJson) -> HashMap<&str, Vec<&str>> {
-	let data: &geojson::FeatureCollection = match geojson {
-		geojson::GeoJson::FeatureCollection(fc) => fc,
+fn geojson_to_adjacency_map(geojson: &GeoJson) -> HashMap<&str, Vec<&str>> {
+	let data: &FeatureCollection = match geojson {
+		GeoJson::FeatureCollection(fc) => fc,
 		_ => panic!("unsupported geojson type"),
 	};
 
-	let features: &Vec<geojson::Feature> = &data.features;
+	let features: &Vec<Feature> = &data.features;
 
 	let adjacency_map: HashMap<&str, Vec<&str>> = features
 		.iter()
@@ -105,9 +108,7 @@ fn geojson_to_adjacency_map(geojson: &geojson::GeoJson) -> HashMap<&str, Vec<&st
 	adjacency_map
 }
 
-fn write_adjacency_map(file: &mut std::fs::File, adjacency_map: HashMap<&str, Vec<&str>>) {
-	use std::io::Write;
-
+fn write_adjacency_map(file: &mut File, adjacency_map: HashMap<&str, Vec<&str>>) {
 	for (lhs, neighbors) in adjacency_map {
 		for rhs in neighbors {
 			writeln!(file, "{},{}", lhs, rhs).expect("failed to write output");
@@ -121,7 +122,7 @@ fn main() {
 	let input_file: String = std::env::args().nth(1).expect("missing input file name");
 	let output_file: String = std::env::args().nth(2).expect("missing output file name");
 
-	let mut input_file: std::fs::File = OpenOptions::new()
+	let mut input_file: File = OpenOptions::new()
 		.read(true)
 		.open(input_file)
 		.expect("failed to open input file for reading");
@@ -134,18 +135,18 @@ fn main() {
 		string
 	};
 
-	let data: geojson::GeoJson = input_data
-		.parse::<geojson::GeoJson>()
+	let data: GeoJson = input_data
+		.parse::<GeoJson>()
 		.expect("failed to parse input as geojson");
 
 	let adjacency_map = geojson_to_adjacency_map(&data);
 
-	let mut output_file = OpenOptions::new()
+	let mut output_file: File = OpenOptions::new()
 		.create(true)
 		.write(true)
 		.truncate(true)
 		.open(output_file)
-		.expect("failed to open {output_file} for writing");
+		.expect("failed to open output file for writing");
 
 	write_adjacency_map(&mut output_file, adjacency_map);
 }
