@@ -36,7 +36,7 @@ fn feature_id(feature: &Feature) -> Option<&str> {
 	}
 }
 
-type FeatureGeometry<'x> = (&'x str, geo::Geometry<f64>);
+type FeatureGeometry<'x> = (&'x str, geo::Geometry<f32>);
 
 fn feature_to_geometry(feature: &Feature) -> FeatureGeometry {
 	use core::convert::TryInto;
@@ -47,7 +47,7 @@ fn feature_to_geometry(feature: &Feature) -> FeatureGeometry {
 		.as_ref()
 		.expect("geometry-less feature?!");
 
-	let geometry: geo::Geometry<f64> = (geometry.value)
+	let geometry: geo::Geometry<f32> = (geometry.value)
 		.to_owned()
 		.try_into()
 		.expect("failed to convert geometry");
