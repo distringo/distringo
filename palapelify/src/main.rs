@@ -1,4 +1,5 @@
 use std::collections::*;
+use std::fs::OpenOptions;
 use std::io::Read;
 
 use itertools::Itertools;
@@ -80,10 +81,14 @@ fn main() {
 	let input_file: String = std::env::args().nth(1).expect("missing input file name");
 	let output_file: String = std::env::args().nth(2).expect("missing output file name");
 
+	let mut input_file: std::fs::File = OpenOptions::new()
+		.read(true)
+		.open(input_file)
+		.expect("failed to open input file for reading");
+
 	let input_data: String = {
-		let mut handle = std::fs::File::open(input_file).expect("failed to open file");
 		let mut string: String = String::new();
-		handle
+		input_file
 			.read_to_string(&mut string)
 			.expect("failed to read file to string");
 		string
