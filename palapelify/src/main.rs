@@ -6,10 +6,39 @@ use itertools::Itertools;
 
 type FeatureGeometry<'x> = (&'x str, geo::Geometry<f64>);
 
+fn property_key_is_geoid_like(key: &str) -> bool {
+	&key[0..6] == "GEOID"
+}
+
+fn feature_id(feature: &geojson::Feature) -> Option<&str> {
+	const KNOWN_GEOID_KEYS: [&str; 2] = ["GEOID10", "GEOID20"];
+
+	if let Some(str) = KNOWN_GEOID_KEYS
+		.iter()
+		.find_map(|&key| feature.property(key).and_then(serde_json::Value::as_str))
+	{
+		Some(str)
+	} else {
+		// Otherwise, try to be somewhat smart about GEOID types before just iving up.
+		if let Some((property, _value)) = feature
+			.properties_iter()
+			.find(|(key, _)| property_key_is_geoid_like(key))
+		{
+			// This is slow enough to warrant yelling about it and asking for a GitHub issue.
+			tracing::warn!("Found a GEOID-like property called {property}, but this was found by manually searching (which is slow).");
+
+			Some(property)
+		} else {
+			None
+		}
+	}
+}
+
 fn feature_to_geometry(feature: &geojson::Feature) -> FeatureGeometry {
 	use core::convert::TryInto;
 
-	let feature_name: &str = feature.property("GEOID10").unwrap().as_str().unwrap();
+	let feature_id: &str = feature_id(feature).expect("could not determine feature identifier");
+
 	let geometry: &geojson::Geometry = (feature.geometry)
 		.as_ref()
 		.expect("geometry-less feature?!");
@@ -19,7 +48,7 @@ fn feature_to_geometry(feature: &geojson::Feature) -> FeatureGeometry {
 		.try_into()
 		.expect("failed to convert geometry");
 
-	(feature_name, geometry)
+	(feature_id, geometry)
 }
 
 fn geometry_pair_to_adjacency_fragments<'x>(
