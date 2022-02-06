@@ -105,6 +105,16 @@ fn geojson_to_adjacency_map(geojson: &geojson::GeoJson) -> HashMap<&str, Vec<&st
 	adjacency_map
 }
 
+fn write_adjacency_map(file: &mut std::fs::File, adjacency_map: HashMap<&str, Vec<&str>>) {
+	use std::io::Write;
+
+	for (lhs, neighbors) in adjacency_map {
+		for rhs in neighbors {
+			writeln!(file, "{},{}", lhs, rhs).expect("failed to write output");
+		}
+	}
+}
+
 fn main() {
 	tracing_subscriber::fmt::init();
 
@@ -130,5 +140,12 @@ fn main() {
 
 	let adjacency_map = geojson_to_adjacency_map(&data);
 
-	println!("{:#?}", adjacency_map);
+	let mut output_file = OpenOptions::new()
+		.create(true)
+		.write(true)
+		.truncate(true)
+		.open(output_file)
+		.expect("failed to open {output_file} for writing");
+
+	write_adjacency_map(&mut output_file, adjacency_map);
 }
