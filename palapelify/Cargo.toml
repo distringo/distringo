@@ -12,3 +12,6 @@ geojson = { version = "0.22.0", features = ["geo-types"] }
 geo-types = "0.7.0"
 itertools = "0.10.3"
 num-traits = "0.2.14"
+serde_json = "1.0.78"
+tracing = "0.1.30"
+tracing-subscriber = "0.3.8"

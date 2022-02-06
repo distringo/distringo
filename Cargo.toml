@@ -32,16 +32,16 @@ log = "0.4.14"
 thiserror = "1.0.30"
 tokio = { version = "1.15.0", features = ["macros", "rt-multi-thread"] }
 tokio-stream = { version = "0.1.8", default_features = false }
-tracing = "=0.1.29"
-tracing-subscriber = { version = "=0.3.7", features = ["env-filter"] }
+tracing = "0.1.30"
+tracing-subscriber = { version = "0.3.8", features = ["env-filter"] }
 pretty_env_logger = "0.4.0"
 
 # Web server dependencies
-axum = "=0.4.4"
+axum = "0.4.4"
 http = "0.2.6"
 hyper = "0.14.16"
-tower = { version = "=0.4.11", features = ["util", "timeout"] }
-tower-http = { version = "=0.2.1", features = ["add-extension", "trace"] }
+tower = { version = "0.4.11", features = ["util", "timeout"] }
+tower-http = { version = "0.2.1", features = ["add-extension", "trace"] }
 
 
 [dev-dependencies]
