@@ -51,6 +51,7 @@ fn feature_to_geometry(feature: &geojson::Feature) -> FeatureGeometry {
 	(feature_id, geometry)
 }
 
+#[tracing::instrument]
 fn geometry_pair_to_adjacency_fragments<'x>(
 	pair: (FeatureGeometry<'x>, FeatureGeometry<'x>),
 ) -> Option<Vec<(&'x str, &'x str)>> {
