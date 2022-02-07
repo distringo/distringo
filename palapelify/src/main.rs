@@ -1,5 +1,5 @@
 use std::{
-	collections::*,
+	collections::HashMap,
 	fs::{File, OpenOptions},
 	io::{Read, Write},
 };
