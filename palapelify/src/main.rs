@@ -60,7 +60,7 @@ fn feature_to_geometry(feature: &Feature) -> FeatureGeometry {
 #[tracing::instrument]
 fn geometry_pair_to_adjacency_fragments<'x>(
 	pair: (FeatureGeometry<'x>, FeatureGeometry<'x>),
-) -> Option<Vec<(&'x str, &'x str)>> {
+) -> Option<[(&'x str, &'x str); 2]> {
 	let name_a: &str = pair.0 .0;
 	let name_b: &str = pair.1 .0;
 
