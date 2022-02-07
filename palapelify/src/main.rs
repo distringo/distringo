@@ -50,7 +50,7 @@ fn feature_to_geometry(feature: &Feature) -> FeatureGeometry {
 		.expect("geometry-less feature?!");
 
 	let geometry: geo::Geometry<f32> = (geometry.value)
-		.to_owned()
+		.clone()
 		.try_into()
 		.expect("failed to convert geometry");
 
