@@ -6,6 +6,8 @@ use std::{
 
 use itertools::Itertools;
 
+use rayon::prelude::*;
+
 use geojson::{Feature, FeatureCollection, GeoJson};
 
 fn property_key_is_geoid_like(key: &str) -> bool {
@@ -80,10 +82,53 @@ fn geometry_pair_to_adjacency_fragments<'x>(
 	};
 
 	if overlaps {
-		Some(vec![(name_a, name_b), (name_b, name_a)])
+		Some([(name_a, name_b), (name_b, name_a)])
 	} else {
 		None
 	}
+}
+
+fn generate_feature_pairs(
+	features: &[Feature],
+) -> impl Iterator<Item = ((&str, geo::Geometry<f32>), (&str, geo::Geometry<f32>))> {
+	features
+		.iter()
+		.map(feature_to_geometry)
+		.tuple_combinations()
+}
+
+fn generate_adjacencies<'a>(
+	feature_pairs: impl Iterator<Item = ((&'a str, geo::Geometry<f32>), (&'a str, geo::Geometry<f32>))>
+		+ Send,
+) -> impl ParallelIterator<Item = HashMap<&'a str, Vec<&'a str>>> {
+	feature_pairs
+		.par_bridge()
+		.filter_map(geometry_pair_to_adjacency_fragments)
+		.flatten()
+		.fold(HashMap::new, |mut map, (id, neighbor)| {
+			map.entry(id).or_insert_with(Vec::new).push(neighbor);
+			map
+		})
+}
+
+fn compute_fragments<'a>(
+	feature_pairs: impl Iterator<Item = ((&'a str, geo::Geometry<f32>), (&'a str, geo::Geometry<f32>))>
+		+ Send,
+) -> HashMap<&'a str, Vec<&'a str>> {
+	// First, compute all the adjacencies in parallel.
+	let result: Vec<HashMap<&str, Vec<&str>>> = generate_adjacencies(feature_pairs).collect();
+
+	// Then, collect all the individual pieces into a single, final, HashMap<id, [neighbors]>
+	result.into_iter().flat_map(HashMap::into_iter).fold(
+		HashMap::new(),
+		|mut final_map, (id, neighbors)| {
+			final_map
+				.entry(id)
+				.or_insert_with(Vec::new)
+				.extend(neighbors);
+			final_map
+		},
+	)
 }
 
 fn geojson_to_adjacency_map(geojson: &GeoJson) -> HashMap<&str, Vec<&str>> {
@@ -94,18 +139,9 @@ fn geojson_to_adjacency_map(geojson: &GeoJson) -> HashMap<&str, Vec<&str>> {
 
 	let features: &Vec<Feature> = &data.features;
 
-	let adjacency_map: HashMap<&str, Vec<&str>> = features
-		.iter()
-		.map(feature_to_geometry)
-		.tuple_combinations()
-		.filter_map(geometry_pair_to_adjacency_fragments)
-		.flatten()
-		.fold(HashMap::new(), |mut map, (name, neighbor)| {
-			map.entry(name).or_insert_with(Vec::new).push(neighbor);
-			map
-		});
+	let feature_pairs = generate_feature_pairs(features);
 
-	adjacency_map
+	compute_fragments(feature_pairs)
 }
 
 fn write_adjacency_map(file: &mut File, adjacency_map: HashMap<&str, Vec<&str>>) {
