@@ -10,32 +10,174 @@ use rayon::prelude::*;
 
 use geojson::{Feature, FeatureCollection, GeoJson};
 
-fn property_key_is_geoid_like(key: &str) -> bool {
-	&key[0..6] == "GEOID"
+fn feature_id_known(feature: &Feature) -> Option<&str> {
+	const KNOWN_GEOID_KEYS: [&str; 2] = ["GEOID10", "GEOID20"];
+
+	KNOWN_GEOID_KEYS
+		.iter()
+		.find_map(|&key| feature.property(key).and_then(serde_json::Value::as_str))
+}
+
+#[cfg(test)]
+mod feature_id_known {
+	use super::{feature_id_known, Feature};
+
+	const REAL_GEOID: &str = "A valid geoid!";
+
+	fn properties(key: &str) -> Option<serde_json::Map<String, serde_json::Value>> {
+		let mut map = serde_json::Map::new();
+		map.insert(
+			key.to_string(),
+			serde_json::Value::String(REAL_GEOID.to_string()),
+		);
+		Some(map)
+	}
+
+	fn blank_feature() -> Feature {
+		let bbox = None;
+		let properties = None;
+		let geometry = None;
+		let id = None;
+		let foreign_members = None;
+
+		Feature {
+			bbox,
+			properties,
+			geometry,
+			id,
+			foreign_members,
+		}
+	}
+
+	#[test]
+	fn geoid10() {
+		let properties = properties("GEOID10");
+		let feature = Feature {
+			properties,
+			..blank_feature()
+		};
+
+		assert_eq!(feature_id_known(&feature), Some(REAL_GEOID));
+	}
+
+	#[test]
+	fn geoid20() {
+		let properties = properties("GEOID20");
+		let feature = Feature {
+			properties,
+			..blank_feature()
+		};
+
+		assert_eq!(feature_id_known(&feature), Some(REAL_GEOID));
+	}
+}
+
+fn is_geoid_like(key: &str) -> bool {
+	match key.get(0..5) {
+		Some(str) => str == "GEOID",
+		None => false,
+	}
+}
+
+#[cfg(test)]
+mod is_geoid_like {
+	use super::is_geoid_like;
+
+	#[test]
+	fn geoid10_geoid_like() {
+		assert_eq!(is_geoid_like("GEOID10"), true);
+	}
+
+	#[test]
+	fn geoid20_geoid_like() {
+		assert_eq!(is_geoid_like("GEOID20"), true);
+	}
+
+	#[test]
+	fn special_geoid_like() {
+		assert_eq!(is_geoid_like("GEOID98"), true);
+	}
+
+	#[test]
+	fn empty_geoid_like() {
+		assert_eq!(is_geoid_like(""), false);
+	}
+}
+
+fn feature_id_unknown(feature: &Feature) -> Option<&str> {
+	if let Some((key, _value)) = feature
+		.properties_iter()
+		.find(|(key, _)| is_geoid_like(key))
+	{
+		tracing::warn!(%key, "Found a GEOID-like property, but by manual search. Please consider filing an issue to add this to the list of known GEOID keys.");
+		Some(key)
+	} else {
+		let properties: Vec<(&String, &serde_json::Value)> = feature.properties_iter().collect();
+		tracing::warn!(
+			?properties,
+			"Failed to find a GEOID-like property by manual search."
+		);
+
+		None
+	}
+}
+
+#[cfg(test)]
+mod feature_id_unknown {
+	use super::{feature_id_unknown, Feature};
+
+	const REAL_GEOID: &str = "A valid geoid!";
+
+	fn properties(key: &str) -> Option<serde_json::Map<String, serde_json::Value>> {
+		let mut map = serde_json::Map::new();
+		map.insert(
+			key.to_string(),
+			serde_json::Value::String(REAL_GEOID.to_string()),
+		);
+		Some(map)
+	}
+
+	fn blank_feature() -> Feature {
+		let bbox = None;
+		let properties = None;
+		let geometry = None;
+		let id = None;
+		let foreign_members = None;
+
+		Feature {
+			bbox,
+			properties,
+			geometry,
+			id,
+			foreign_members,
+		}
+	}
+
+	#[test]
+	fn geoid10() {
+		let properties = properties("GEOID10");
+		let feature = Feature {
+			properties,
+			..blank_feature()
+		};
+
+		assert_eq!(feature_id_unknown(&feature), Some(REAL_GEOID));
+	}
+
+	#[test]
+	fn geoid20() {
+		let properties = properties("GEOID20");
+		let feature = Feature {
+			properties,
+			..blank_feature()
+		};
+
+		assert_eq!(feature_id_unknown(&feature), Some(REAL_GEOID));
+	}
 }
 
 fn feature_id(feature: &Feature) -> Option<&str> {
-	const KNOWN_GEOID_KEYS: [&str; 2] = ["GEOID10", "GEOID20"];
-
-	if let Some(str) = KNOWN_GEOID_KEYS
-		.iter()
-		.find_map(|&key| feature.property(key).and_then(serde_json::Value::as_str))
-	{
-		Some(str)
-	} else {
-		// Otherwise, try to be somewhat smart about GEOID types before just iving up.
-		if let Some((property, _value)) = feature
-			.properties_iter()
-			.find(|(key, _)| property_key_is_geoid_like(key))
-		{
-			// This is slow enough to warrant yelling about it and asking for a GitHub issue.
-			tracing::warn!("Found a GEOID-like property called {property}, but this was found by manually searching (which is slow).");
-
-			Some(property)
-		} else {
-			None
-		}
-	}
+	feature_id_known(feature).or_else(|| feature_id_unknown(feature))
 }
 
 type FeatureGeometry<'x> = (&'x str, geo::Geometry<f32>);
