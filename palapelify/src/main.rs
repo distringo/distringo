@@ -182,10 +182,13 @@ fn feature_id(feature: &Feature) -> Option<&str> {
 
 type FeatureGeometry<'x> = (&'x str, geo::Geometry<f32>);
 
+#[tracing::instrument(skip(feature))]
 fn feature_to_geometry(feature: &Feature) -> FeatureGeometry {
 	use core::convert::TryInto;
 
 	let feature_id: &str = feature_id(feature).expect("could not determine feature identifier");
+
+	tracing::trace!("Found feature id {}", feature_id);
 
 	let geometry: &geojson::Geometry = (feature.geometry)
 		.as_ref()
@@ -199,53 +202,71 @@ fn feature_to_geometry(feature: &Feature) -> FeatureGeometry {
 	(feature_id, geometry)
 }
 
-#[tracing::instrument]
-fn geometry_pair_to_adjacency_fragments<'x>(
+fn pair_are_adjacent(geometry_a: &geo::Geometry<f32>, geometry_b: &geo::Geometry<f32>) -> bool {
+	use geo::{bounding_rect::BoundingRect, intersects::Intersects};
+
+	// In nearly all cases we care about, we should have bounding boxes.
+	//
+	// It's worth checking these, as we can completely ignore geometries whose
+	// bounding boxes don't overlap.
+	match (geometry_a.bounding_rect(), geometry_b.bounding_rect()) {
+		// If we have bounding rects, check the bounding rects first.  This allows us to refute
+		// obviously-separated geometries.
+		(Some(bounding_rect_a), Some(bounding_rect_b)) => {
+			bounding_rect_a.intersects(&bounding_rect_b) && geometry_a.intersects(geometry_b)
+		}
+		// As a fallback, we can skip the bounding-rect check.  But, it's worth knowing about
+		// the performance hit.
+		_ => {
+			// TODO(rye): Use a memoized geometry identifier database.
+			tracing::warn!("Missing bounding_rect information for at least one geometry");
+			geometry_a.intersects(geometry_b)
+		}
+	}
+}
+
+#[tracing::instrument(skip(pair))]
+fn geometry_pair_adjacencies<'x>(
 	pair: (FeatureGeometry<'x>, FeatureGeometry<'x>),
 ) -> Option<[(&'x str, &'x str); 2]> {
 	let name_a: &str = pair.0 .0;
 	let name_b: &str = pair.1 .0;
 
-	let overlaps: bool = {
-		use geo::{bounding_rect::BoundingRect, intersects::Intersects};
+	let geometry_a = pair.0 .1;
+	let geometry_b = pair.1 .1;
 
-		let ls_a = &pair.0 .1;
-		let ls_b = &pair.1 .1;
-
-		// In nearly all cases, we should have bounding boxes, so check that they
-		// overlap before doing the (more intense) operation of checking each segment
-		// in a LineString for intersection.
-		match (ls_a.bounding_rect(), ls_b.bounding_rect()) {
-			(Some(a_bb), Some(b_bb)) => a_bb.intersects(&b_bb) && ls_a.intersects(ls_b),
-			// Fall back on simple LineString intersection checking if we couldn't figure
-			// out bounding boxes (e.g. because of an empty LineString? this should be rare.)
-			_ => ls_a.intersects(ls_b),
-		}
-	};
-
-	if overlaps {
+	// If geometries A and B are adjacent, then
+	if pair_are_adjacent(&geometry_a, &geometry_b) {
+		tracing::debug!(%name_a, %name_b, "Found adjacent geometries!");
 		Some([(name_a, name_b), (name_b, name_a)])
 	} else {
+		tracing::trace!(%name_a, %name_b, "Geometries are not adjacent.");
 		None
 	}
 }
 
+#[tracing::instrument(skip(features))]
+fn unwrap_feature_geometry(
+	features: &[Feature],
+) -> impl Iterator<Item = FeatureGeometry<'_>> + Clone {
+	features.iter().map(feature_to_geometry)
+}
+
+/// Produce an iterator over pairs of type `FeatureGeometry<'_>`.
+#[tracing::instrument(skip(features))]
 fn generate_feature_pairs(
 	features: &[Feature],
-) -> impl Iterator<Item = ((&str, geo::Geometry<f32>), (&str, geo::Geometry<f32>))> {
-	features
-		.iter()
-		.map(feature_to_geometry)
-		.tuple_combinations()
+) -> impl Iterator<Item = (FeatureGeometry<'_>, FeatureGeometry<'_>)> {
+	unwrap_feature_geometry(features).tuple_combinations()
 }
 
 fn generate_adjacencies<'a>(
-	feature_pairs: impl Iterator<Item = ((&'a str, geo::Geometry<f32>), (&'a str, geo::Geometry<f32>))>
-		+ Send,
+	feature_pairs: impl Iterator<Item = (FeatureGeometry<'a>, FeatureGeometry<'a>)> + Send,
 ) -> impl ParallelIterator<Item = HashMap<&'a str, Vec<&'a str>>> {
 	feature_pairs
 		.par_bridge()
-		.filter_map(geometry_pair_to_adjacency_fragments)
+		.filter_map(geometry_pair_adjacencies)
+		.inspect(|pair| tracing::debug!(?pair, "Inserting pair"))
 		.flatten()
 		.fold(HashMap::new, |mut map, (id, neighbor)| {
 			map.entry(id).or_insert_with(Vec::new).push(neighbor);
@@ -254,11 +275,17 @@ fn generate_adjacencies<'a>(
 }
 
 fn compute_fragments<'a>(
-	feature_pairs: impl Iterator<Item = ((&'a str, geo::Geometry<f32>), (&'a str, geo::Geometry<f32>))>
-		+ Send,
+	feature_pairs: impl Iterator<Item = (FeatureGeometry<'a>, FeatureGeometry<'a>)> + Send,
 ) -> HashMap<&'a str, Vec<&'a str>> {
+	tracing::debug!("Computing adjacency pairs in parallel");
+
 	// First, compute all the adjacencies in parallel.
 	let result: Vec<HashMap<&str, Vec<&str>>> = generate_adjacencies(feature_pairs).collect();
+
+	tracing::debug!(
+		"Collapsing {} adjacency pair sets to a final map",
+		result.len()
+	);
 
 	// Then, collect all the individual pieces into a single, final, HashMap<id, [neighbors]>
 	result.into_iter().flat_map(HashMap::into_iter).fold(
@@ -273,6 +300,7 @@ fn compute_fragments<'a>(
 	)
 }
 
+#[tracing::instrument(skip(geojson))]
 fn geojson_to_adjacency_map(geojson: &GeoJson) -> HashMap<&str, Vec<&str>> {
 	let data: &FeatureCollection = match geojson {
 		GeoJson::FeatureCollection(fc) => fc,
@@ -286,7 +314,10 @@ fn geojson_to_adjacency_map(geojson: &GeoJson) -> HashMap<&str, Vec<&str>> {
 	compute_fragments(feature_pairs)
 }
 
+#[tracing::instrument]
 fn write_adjacency_map(file: &mut File, adjacency_map: HashMap<&str, Vec<&str>>) {
+	tracing::debug!(?file, "Writing adjacency map");
+
 	for (lhs, neighbors) in adjacency_map {
 		for rhs in neighbors {
 			writeln!(file, "{},{}", lhs, rhs).expect("failed to write output");
@@ -300,10 +331,14 @@ fn main() {
 	let input_file: String = std::env::args().nth(1).expect("missing input file name");
 	let output_file: String = std::env::args().nth(2).expect("missing output file name");
 
+	tracing::info!(?input_file, ?output_file, "Validated arguments");
+
 	let mut input_file: File = OpenOptions::new()
 		.read(true)
 		.open(input_file)
 		.expect("failed to open input file for reading");
+
+	tracing::debug!(?input_file, "Opened input file");
 
 	let input_data: String = {
 		let mut string: String = String::new();
@@ -313,9 +348,16 @@ fn main() {
 		string
 	};
 
+	{
+		let input_bytes = input_data.len();
+		tracing::debug!(?input_file, "Read {} bytes", input_bytes);
+	}
+
 	let data: GeoJson = input_data
 		.parse::<GeoJson>()
 		.expect("failed to parse input as geojson");
+
+	tracing::debug!(?input_file, "Parsed to GeoJson");
 
 	let adjacency_map = geojson_to_adjacency_map(&data);
 
@@ -325,6 +367,8 @@ fn main() {
 		.truncate(true)
 		.open(output_file)
 		.expect("failed to open output file for writing");
+
+	tracing::debug!(?output_file, "Opened output file");
 
 	write_adjacency_map(&mut output_file, adjacency_map);
 }
