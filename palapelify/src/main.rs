@@ -1,7 +1,7 @@
 // #![cfg_attr(debug_assertions, allow(dead_code))]
 
 use std::{
-	collections::{HashMap, HashSet},
+	collections::{BTreeMap, BTreeSet, HashMap, HashSet},
 	fs::{File, OpenOptions},
 	io::{Read, Write},
 };
@@ -255,8 +255,8 @@ fn feature_id(feature: &Feature) -> Option<&str> {
 	feature_id_known(feature).or_else(|| feature_id_unknown(feature))
 }
 
-#[tracing::instrument]
-fn write_adjacency_map(file: &mut File, adjacency_map: HashMap<&GeoId, Vec<&GeoId>>) {
+#[tracing::instrument(skip(adjacency_map))]
+fn write_adjacency_map(file: &mut File, adjacency_map: BTreeMap<&GeoId, BTreeSet<&GeoId>>) {
 	tracing::debug!(?file, "Writing adjacency map");
 
 	for (lhs, neighbors) in adjacency_map {
@@ -266,7 +266,7 @@ fn write_adjacency_map(file: &mut File, adjacency_map: HashMap<&GeoId, Vec<&GeoI
 	}
 }
 
-fn compute_adjacencies(interner: &GeometryInterner) -> HashMap<&GeoId, Vec<&GeoId>> {
+fn compute_adjacencies(interner: &GeometryInterner) -> BTreeMap<&GeoId, BTreeSet<&GeoId>> {
 	let maps: Vec<HashMap<&GeoId, Vec<&GeoId>>> = interner
 		.entries()
 		.tuple_combinations::<(_, _)>()
@@ -288,11 +288,11 @@ fn compute_adjacencies(interner: &GeometryInterner) -> HashMap<&GeoId, Vec<&GeoI
 		.collect();
 
 	maps.into_iter().flat_map(HashMap::into_iter).fold(
-		HashMap::new(),
+		BTreeMap::new(),
 		|mut final_map, (id, neighbors)| {
 			final_map
 				.entry(id)
-				.or_insert_with(Vec::new)
+				.or_insert_with(BTreeSet::new)
 				.extend(neighbors);
 			final_map
 		},
