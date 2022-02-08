@@ -267,17 +267,9 @@ fn write_adjacency_map(file: &mut File, adjacency_map: HashMap<&GeoId, Vec<&GeoI
 }
 
 fn compute_adjacencies(interner: &GeometryInterner) -> HashMap<&GeoId, Vec<&GeoId>> {
-	let mut counter = 0_usize;
-
 	let maps: Vec<HashMap<&GeoId, Vec<&GeoId>>> = interner
 		.entries()
 		.tuple_combinations::<(_, _)>()
-		.inspect(|_e| {
-			counter += 1;
-			if counter % 1000 == 0 {
-				tracing::debug!("Generated {} tuple combinations", counter)
-			}
-		})
 		.par_bridge()
 		.filter_map(|((a_geoid, a_points), (b_geoid, b_points))| {
 			let mut intersection = a_points.intersection(b_points);
