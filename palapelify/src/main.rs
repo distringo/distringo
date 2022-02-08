@@ -280,7 +280,7 @@ fn compute_adjacencies(interner: &GeometryInterner) -> HashMap<&GeoId, Vec<&GeoI
 		})
 		.par_bridge()
 		.filter_map(|((a_geoid, a_points), (b_geoid, b_points))| {
-			let mut intersection = a_points.intersection(&b_points);
+			let mut intersection = a_points.intersection(b_points);
 
 			if let Some(_) = intersection.next() {
 				Some([(a_geoid, b_geoid), (b_geoid, a_geoid)])
