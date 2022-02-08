@@ -160,22 +160,22 @@ mod is_geoid_like {
 
 	#[test]
 	fn geoid10_geoid_like() {
-		assert_eq!(is_geoid_like("GEOID10"), true);
+		assert!(is_geoid_like("GEOID10"));
 	}
 
 	#[test]
 	fn geoid20_geoid_like() {
-		assert_eq!(is_geoid_like("GEOID20"), true);
+		assert!(is_geoid_like("GEOID20"));
 	}
 
 	#[test]
 	fn special_geoid_like() {
-		assert_eq!(is_geoid_like("GEOID98"), true);
+		assert!(is_geoid_like("GEOID98"));
 	}
 
 	#[test]
 	fn empty_geoid_like() {
-		assert_eq!(is_geoid_like(""), false);
+		assert!(!is_geoid_like(""));
 	}
 }
 
