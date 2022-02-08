@@ -48,16 +48,9 @@ impl From<GeoScalar> for f32 {
 #[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct GeometryPoint([GeoScalar; 2]);
 
+#[derive(Default)]
 struct GeometryInterner {
 	inner: HashMap<GeoId, HashSet<GeometryPoint>>,
-}
-
-impl Default for GeometryInterner {
-	fn default() -> Self {
-		Self {
-			inner: Default::default(),
-		}
-	}
 }
 
 impl From<geo::Coordinate<f32>> for GeometryPoint {
