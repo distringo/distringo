@@ -85,6 +85,41 @@ impl GeometryInterner {
 	}
 }
 
+impl GeometryInterner {
+	fn compute_adjacencies(&self) -> BTreeMap<&GeoId, BTreeSet<&GeoId>> {
+		let maps: Vec<HashMap<&GeoId, Vec<&GeoId>>> = self
+			.entries()
+			.tuple_combinations::<(_, _)>()
+			.par_bridge()
+			.filter_map(|((a_geoid, a_points), (b_geoid, b_points))| {
+				let mut intersection = a_points.intersection(b_points);
+
+				if intersection.next().is_some() {
+					Some([(a_geoid, b_geoid), (b_geoid, a_geoid)])
+				} else {
+					None
+				}
+			})
+			.flatten()
+			.fold(HashMap::new, |mut map, (geoid_a, geoid_b)| {
+				map.entry(geoid_a).or_insert_with(Vec::new).push(geoid_b);
+				map
+			})
+			.collect();
+
+		maps.into_iter().flat_map(HashMap::into_iter).fold(
+			BTreeMap::new(),
+			|mut final_map, (id, neighbors)| {
+				final_map
+					.entry(id)
+					.or_insert_with(BTreeSet::new)
+					.extend(neighbors);
+				final_map
+			},
+		)
+	}
+}
+
 fn feature_id_known(feature: &Feature) -> Option<&str> {
 	const KNOWN_GEOID_KEYS: [&str; 2] = ["GEOID10", "GEOID20"];
 
@@ -266,39 +301,6 @@ fn write_adjacency_map(file: &mut File, adjacency_map: BTreeMap<&GeoId, BTreeSet
 	}
 }
 
-fn compute_adjacencies(interner: &GeometryInterner) -> BTreeMap<&GeoId, BTreeSet<&GeoId>> {
-	let maps: Vec<HashMap<&GeoId, Vec<&GeoId>>> = interner
-		.entries()
-		.tuple_combinations::<(_, _)>()
-		.par_bridge()
-		.filter_map(|((a_geoid, a_points), (b_geoid, b_points))| {
-			let mut intersection = a_points.intersection(b_points);
-
-			if intersection.next().is_some() {
-				Some([(a_geoid, b_geoid), (b_geoid, a_geoid)])
-			} else {
-				None
-			}
-		})
-		.flatten()
-		.fold(HashMap::new, |mut map, (geoid_a, geoid_b)| {
-			map.entry(geoid_a).or_insert_with(Vec::new).push(geoid_b);
-			map
-		})
-		.collect();
-
-	maps.into_iter().flat_map(HashMap::into_iter).fold(
-		BTreeMap::new(),
-		|mut final_map, (id, neighbors)| {
-			final_map
-				.entry(id)
-				.or_insert_with(BTreeSet::new)
-				.extend(neighbors);
-			final_map
-		},
-	)
-}
-
 fn load_geojson(geojson: GeoJson, interner: &mut GeometryInterner) {
 	use core::convert::TryFrom;
 
@@ -369,7 +371,7 @@ fn main() {
 
 	let interner = process_input_file(&mut input_file);
 
-	let adjacency_map = compute_adjacencies(&interner);
+	let adjacency_map = interner.compute_adjacencies();
 
 	let mut output_file: File = OpenOptions::new()
 		.create(true)
