@@ -324,21 +324,8 @@ fn load_geojson(geojson: GeoJson, interner: &mut GeometryInterner) {
 	}
 }
 
-fn main() {
-	tracing_subscriber::fmt::init();
-
-	let input_file: String = std::env::args().nth(1).expect("missing input file name");
-	let output_file: String = std::env::args().nth(2).expect("missing output file name");
-
-	tracing::info!(?input_file, ?output_file, "Validated arguments");
-
-	let mut input_file: File = OpenOptions::new()
-		.read(true)
-		.open(input_file)
-		.expect("failed to open input file for reading");
-
-	tracing::debug!(?input_file, "Opened input file");
-
+#[tracing::instrument]
+fn process_input_file(input_file: &mut File) -> GeometryInterner {
 	let input_data: String = {
 		let mut string: String = String::new();
 		input_file
@@ -361,6 +348,26 @@ fn main() {
 	let mut interner: GeometryInterner = GeometryInterner::new();
 
 	load_geojson(data, &mut interner);
+
+	interner
+}
+
+fn main() {
+	tracing_subscriber::fmt::init();
+
+	let input_file: String = std::env::args().nth(1).expect("missing input file name");
+	let output_file: String = std::env::args().nth(2).expect("missing output file name");
+
+	tracing::info!(?input_file, ?output_file, "Validated arguments");
+
+	let mut input_file: File = OpenOptions::new()
+		.read(true)
+		.open(input_file)
+		.expect("failed to open input file for reading");
+
+	tracing::debug!(?input_file, "Opened input file");
+
+	let interner = process_input_file(&mut input_file);
 
 	let adjacency_map = compute_adjacencies(&interner);
 
