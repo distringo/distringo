@@ -21,6 +21,33 @@ impl From<String> for GeoId {
 	}
 }
 
+struct GeometryInterner<T: geo_types::CoordNum> {
+	inner: HashMap<GeoId, geo::Geometry<T>>,
+}
+
+impl<T: geo_types::CoordNum> Default for GeometryInterner<T> {
+	fn default() -> Self {
+		Self {
+			inner: Default::default(),
+		}
+	}
+}
+
+impl<T: geo_types::CoordNum> GeometryInterner<T> {
+	#[must_use]
+	fn new() -> Self {
+		Self::default()
+	}
+
+	fn get(&self, geoid: &GeoId) -> Option<&geo::Geometry<T>> {
+		self.inner.get(geoid)
+	}
+
+	fn insert(&mut self, geoid: GeoId, geometry: geo::Geometry<T>) {
+		self.inner.insert(geoid, geometry);
+	}
+}
+
 fn feature_id_known(feature: &Feature) -> Option<&str> {
 	const KNOWN_GEOID_KEYS: [&str; 2] = ["GEOID10", "GEOID20"];
 
