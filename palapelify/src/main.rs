@@ -12,6 +12,15 @@ use rayon::prelude::*;
 
 use geojson::{Feature, FeatureCollection, GeoJson};
 
+#[derive(Hash, Eq, PartialEq)]
+struct GeoId(String);
+
+impl From<String> for GeoId {
+	fn from(string: String) -> Self {
+		Self(string)
+	}
+}
+
 fn feature_id_known(feature: &Feature) -> Option<&str> {
 	const KNOWN_GEOID_KEYS: [&str; 2] = ["GEOID10", "GEOID20"];
 
