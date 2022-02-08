@@ -316,11 +316,8 @@ fn load_geojson(geojson: GeoJson, interner: &mut GeometryInterner) {
 				.map(ToString::to_string)
 				.map(GeoId::from);
 
-			let geometry: Option<geo_types::Geometry<f32>> = feature
-				.geometry
-				.map(TryFrom::try_from)
-				.map(Result::ok)
-				.flatten();
+			let geometry: Option<geo_types::Geometry<f32>> =
+				feature.geometry.map(TryFrom::try_from).and_then(Result::ok);
 
 			match (geoid, geometry) {
 				(Some(geoid), Some(geometry)) => Some((geoid, geometry)),
