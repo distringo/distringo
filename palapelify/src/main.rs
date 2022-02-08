@@ -1,18 +1,19 @@
-#![cfg_attr(debug_assertions, allow(dead_code))]
+// #![cfg_attr(debug_assertions, allow(dead_code))]
 
 use std::{
-	collections::HashMap,
+	collections::{HashMap, HashSet},
 	fs::{File, OpenOptions},
 	io::{Read, Write},
 };
 
+use geo::coords_iter::CoordsIter;
 use itertools::Itertools;
 
 use rayon::prelude::*;
 
-use geojson::{Feature, FeatureCollection, GeoJson};
+use geojson::{Feature, GeoJson};
 
-#[derive(Hash, Eq, PartialEq)]
+#[derive(Debug, Hash, Eq, PartialEq)]
 struct GeoId(String);
 
 impl From<String> for GeoId {
@@ -21,11 +22,37 @@ impl From<String> for GeoId {
 	}
 }
 
-struct GeometryInterner<T: geo_types::CoordNum> {
-	inner: HashMap<GeoId, geo::Geometry<T>>,
+impl core::fmt::Display for GeoId {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{}", self.0)
+	}
 }
 
-impl<T: geo_types::CoordNum> Default for GeometryInterner<T> {
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
+struct GeoScalar(i32);
+
+impl From<f32> for GeoScalar {
+	fn from(f32: f32) -> Self {
+		debug_assert!(f32 < 180.00 && f32 > -180.0);
+
+		Self((f32 * 1E6).trunc() as i32)
+	}
+}
+
+impl From<GeoScalar> for f32 {
+	fn from(geo_scalar: GeoScalar) -> f32 {
+		(geo_scalar.0 as f32) / 1E6
+	}
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
+struct GeometryPoint([GeoScalar; 2]);
+
+struct GeometryInterner {
+	inner: HashMap<GeoId, HashSet<GeometryPoint>>,
+}
+
+impl Default for GeometryInterner {
 	fn default() -> Self {
 		Self {
 			inner: Default::default(),
@@ -33,18 +60,35 @@ impl<T: geo_types::CoordNum> Default for GeometryInterner<T> {
 	}
 }
 
-impl<T: geo_types::CoordNum> GeometryInterner<T> {
+impl From<geo::Coordinate<f32>> for GeometryPoint {
+	fn from(coordinate: geo::Coordinate<f32>) -> Self {
+		GeometryPoint([coordinate.x.into(), coordinate.y.into()])
+	}
+}
+
+impl GeometryInterner {
 	#[must_use]
 	fn new() -> Self {
 		Self::default()
 	}
 
-	fn get(&self, geoid: &GeoId) -> Option<&geo::Geometry<T>> {
+	fn get(&self, geoid: &GeoId) -> Option<&HashSet<GeometryPoint>> {
 		self.inner.get(geoid)
 	}
 
-	fn insert(&mut self, geoid: GeoId, geometry: geo::Geometry<T>) {
-		self.inner.insert(geoid, geometry);
+	fn insert(&mut self, geoid: GeoId, geometry: geo::Geometry<f32>) {
+		let points = geometry.coords_iter().map(GeometryPoint::from).collect();
+		self.inner.insert(geoid, points);
+	}
+}
+
+impl GeometryInterner {
+	fn geoids(&self) -> impl Iterator<Item = &GeoId> + Clone + Send {
+		self.inner.keys()
+	}
+
+	fn entries(&self) -> impl Iterator<Item = (&GeoId, &HashSet<GeometryPoint>)> + Clone + Send {
+		self.inner.iter()
 	}
 }
 
@@ -218,115 +262,47 @@ fn feature_id(feature: &Feature) -> Option<&str> {
 	feature_id_known(feature).or_else(|| feature_id_unknown(feature))
 }
 
-type FeatureGeometry<'x> = (&'x str, geo::Geometry<f32>);
+#[tracing::instrument]
+fn write_adjacency_map(file: &mut File, adjacency_map: HashMap<&GeoId, Vec<&GeoId>>) {
+	tracing::debug!(?file, "Writing adjacency map");
 
-#[tracing::instrument(skip(feature))]
-fn feature_to_geometry(feature: &Feature) -> FeatureGeometry {
-	use core::convert::TryInto;
-
-	let feature_id: &str = feature_id(feature).expect("could not determine feature identifier");
-
-	tracing::trace!("Found feature id {}", feature_id);
-
-	let geometry: &geojson::Geometry = (feature.geometry)
-		.as_ref()
-		.expect("geometry-less feature?!");
-
-	let geometry: geo::Geometry<f32> = (geometry.value)
-		.clone()
-		.try_into()
-		.expect("failed to convert geometry");
-
-	(feature_id, geometry)
-}
-
-fn pair_are_adjacent(geometry_a: &geo::Geometry<f32>, geometry_b: &geo::Geometry<f32>) -> bool {
-	use geo::{bounding_rect::BoundingRect, intersects::Intersects};
-
-	// In nearly all cases we care about, we should have bounding boxes.
-	//
-	// It's worth checking these, as we can completely ignore geometries whose
-	// bounding boxes don't overlap.
-	match (geometry_a.bounding_rect(), geometry_b.bounding_rect()) {
-		// If we have bounding rects, check the bounding rects first.  This allows us to refute
-		// obviously-separated geometries.
-		(Some(bounding_rect_a), Some(bounding_rect_b)) => {
-			bounding_rect_a.intersects(&bounding_rect_b) && geometry_a.intersects(geometry_b)
-		}
-		// As a fallback, we can skip the bounding-rect check.  But, it's worth knowing about
-		// the performance hit.
-		_ => {
-			// TODO(rye): Use a memoized geometry identifier database.
-			tracing::warn!("Missing bounding_rect information for at least one geometry");
-			geometry_a.intersects(geometry_b)
+	for (lhs, neighbors) in adjacency_map {
+		for rhs in neighbors {
+			writeln!(file, "{},{}", lhs, rhs).expect("failed to write output");
 		}
 	}
 }
 
-#[tracing::instrument(skip(pair))]
-fn geometry_pair_adjacencies<'x>(
-	pair: (FeatureGeometry<'x>, FeatureGeometry<'x>),
-) -> Option<[(&'x str, &'x str); 2]> {
-	let name_a: &str = pair.0 .0;
-	let name_b: &str = pair.1 .0;
+fn compute_adjacencies(interner: &GeometryInterner) -> HashMap<&GeoId, Vec<&GeoId>> {
+	let mut counter = 0_usize;
 
-	let geometry_a = pair.0 .1;
-	let geometry_b = pair.1 .1;
-
-	// If geometries A and B are adjacent, then
-	if pair_are_adjacent(&geometry_a, &geometry_b) {
-		tracing::debug!(%name_a, %name_b, "Found adjacent geometries!");
-		Some([(name_a, name_b), (name_b, name_a)])
-	} else {
-		tracing::trace!(%name_a, %name_b, "Geometries are not adjacent.");
-		None
-	}
-}
-
-#[tracing::instrument(skip(features))]
-fn unwrap_feature_geometry(
-	features: &[Feature],
-) -> impl Iterator<Item = FeatureGeometry<'_>> + Clone {
-	features.iter().map(feature_to_geometry)
-}
-
-/// Produce an iterator over pairs of type `FeatureGeometry<'_>`.
-#[tracing::instrument(skip(features))]
-fn generate_feature_pairs(
-	features: &[Feature],
-) -> impl Iterator<Item = (FeatureGeometry<'_>, FeatureGeometry<'_>)> {
-	unwrap_feature_geometry(features).tuple_combinations()
-}
-
-fn generate_adjacencies<'a>(
-	feature_pairs: impl Iterator<Item = (FeatureGeometry<'a>, FeatureGeometry<'a>)> + Send,
-) -> impl ParallelIterator<Item = HashMap<&'a str, Vec<&'a str>>> {
-	feature_pairs
+	let maps: Vec<HashMap<&GeoId, Vec<&GeoId>>> = interner
+		.entries()
+		.tuple_combinations::<(_, _)>()
+		.inspect(|e| {
+			counter += 1;
+			if counter % 1000 == 0 {
+				tracing::debug!("Generated {} tuple combinations", counter)
+			}
+		})
 		.par_bridge()
-		.filter_map(geometry_pair_adjacencies)
-		.inspect(|pair| tracing::debug!(?pair, "Inserting pair"))
+		.filter_map(|((a_geoid, a_points), (b_geoid, b_points))| {
+			let mut intersection = a_points.intersection(&b_points);
+
+			if let Some(_) = intersection.next() {
+				Some([(a_geoid, b_geoid), (b_geoid, a_geoid)])
+			} else {
+				None
+			}
+		})
 		.flatten()
-		.fold(HashMap::new, |mut map, (id, neighbor)| {
-			map.entry(id).or_insert_with(Vec::new).push(neighbor);
+		.fold(HashMap::new, |mut map, (geoid_a, geoid_b)| {
+			map.entry(geoid_a).or_insert_with(Vec::new).push(geoid_b);
 			map
 		})
-}
+		.collect();
 
-fn compute_fragments<'a>(
-	feature_pairs: impl Iterator<Item = (FeatureGeometry<'a>, FeatureGeometry<'a>)> + Send,
-) -> HashMap<&'a str, Vec<&'a str>> {
-	tracing::debug!("Computing adjacency pairs in parallel");
-
-	// First, compute all the adjacencies in parallel.
-	let result: Vec<HashMap<&str, Vec<&str>>> = generate_adjacencies(feature_pairs).collect();
-
-	tracing::debug!(
-		"Collapsing {} adjacency pair sets to a final map",
-		result.len()
-	);
-
-	// Then, collect all the individual pieces into a single, final, HashMap<id, [neighbors]>
-	result.into_iter().flat_map(HashMap::into_iter).fold(
+	maps.into_iter().flat_map(HashMap::into_iter).fold(
 		HashMap::new(),
 		|mut final_map, (id, neighbors)| {
 			final_map
@@ -338,28 +314,31 @@ fn compute_fragments<'a>(
 	)
 }
 
-#[tracing::instrument(skip(geojson))]
-fn geojson_to_adjacency_map(geojson: &GeoJson) -> HashMap<&str, Vec<&str>> {
-	let data: &FeatureCollection = match geojson {
-		GeoJson::FeatureCollection(fc) => fc,
-		_ => panic!("unsupported geojson type"),
+fn load_geojson(geojson: GeoJson, interner: &mut GeometryInterner) {
+	use core::convert::TryFrom;
+
+	let geometries = match geojson {
+		GeoJson::FeatureCollection(fc) => fc.features.into_iter().filter_map(|feature| {
+			let geoid = feature_id(&feature)
+				.map(ToString::to_string)
+				.map(GeoId::from);
+
+			let geometry: Option<geo_types::Geometry<f32>> = feature
+				.geometry
+				.map(TryFrom::try_from)
+				.map(Result::ok)
+				.flatten();
+
+			match (geoid, geometry) {
+				(Some(geoid), Some(geometry)) => Some((geoid, geometry)),
+				_ => todo!(),
+			}
+		}),
+		_ => todo!(),
 	};
 
-	let features: &Vec<Feature> = &data.features;
-
-	let feature_pairs = generate_feature_pairs(features);
-
-	compute_fragments(feature_pairs)
-}
-
-#[tracing::instrument]
-fn write_adjacency_map(file: &mut File, adjacency_map: HashMap<&str, Vec<&str>>) {
-	tracing::debug!(?file, "Writing adjacency map");
-
-	for (lhs, neighbors) in adjacency_map {
-		for rhs in neighbors {
-			writeln!(file, "{},{}", lhs, rhs).expect("failed to write output");
-		}
+	for (geoid, geometry) in geometries {
+		interner.insert(geoid, geometry)
 	}
 }
 
@@ -397,7 +376,11 @@ fn main() {
 
 	tracing::debug!(?input_file, "Parsed to GeoJson");
 
-	let adjacency_map = geojson_to_adjacency_map(&data);
+	let mut interner: GeometryInterner = GeometryInterner::new();
+
+	load_geojson(data, &mut interner);
+
+	let adjacency_map = compute_adjacencies(&interner);
 
 	let mut output_file: File = OpenOptions::new()
 		.create(true)
