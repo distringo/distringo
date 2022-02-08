@@ -272,7 +272,7 @@ fn compute_adjacencies(interner: &GeometryInterner) -> HashMap<&GeoId, Vec<&GeoI
 	let maps: Vec<HashMap<&GeoId, Vec<&GeoId>>> = interner
 		.entries()
 		.tuple_combinations::<(_, _)>()
-		.inspect(|e| {
+		.inspect(|_e| {
 			counter += 1;
 			if counter % 1000 == 0 {
 				tracing::debug!("Generated {} tuple combinations", counter)
