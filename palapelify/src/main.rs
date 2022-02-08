@@ -13,7 +13,7 @@ use rayon::prelude::*;
 
 use geojson::{Feature, GeoJson};
 
-#[derive(Debug, Hash, Eq, PartialEq)]
+#[derive(Debug, Hash, Eq, PartialEq, PartialOrd, Ord)]
 struct GeoId(String);
 
 impl From<String> for GeoId {
