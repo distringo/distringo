@@ -13,7 +13,7 @@ use rayon::prelude::*;
 
 use geojson::{Feature, GeoJson};
 
-#[derive(Debug, Hash, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq, PartialOrd, Ord)]
 struct GeoId(String);
 
 impl From<String> for GeoId {
@@ -28,7 +28,7 @@ impl core::fmt::Display for GeoId {
 	}
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct GeoScalar(i32);
 
 impl From<f32> for GeoScalar {
@@ -45,17 +45,18 @@ impl From<GeoScalar> for f32 {
 	}
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct GeometryPoint([GeoScalar; 2]);
 
 #[derive(Default)]
 struct GeometryInterner {
 	inner: HashMap<GeoId, HashSet<GeometryPoint>>,
+	points_to_geoids: HashMap<GeometryPoint, HashSet<GeoId>>,
 }
 
 impl From<geo::Coordinate<f32>> for GeometryPoint {
 	fn from(coordinate: geo::Coordinate<f32>) -> Self {
-		GeometryPoint([coordinate.x.into(), coordinate.y.into()])
+		GeometryPoint([coordinate.y.into(), coordinate.x.into()])
 	}
 }
 
@@ -70,7 +71,17 @@ impl GeometryInterner {
 	}
 
 	fn insert(&mut self, geoid: GeoId, geometry: geo::Geometry<f32>) {
-		let points = geometry.coords_iter().map(GeometryPoint::from).collect();
+		let points: HashSet<GeometryPoint> = geometry.coords_iter().map(GeometryPoint::from).collect();
+
+		for point in points.iter() {
+			let point: GeometryPoint = point.clone();
+			self
+				.points_to_geoids
+				.entry(point)
+				.or_insert_with(HashSet::new)
+				.insert(GeoId(geoid.0.clone()));
+		}
+
 		self.inner.insert(geoid, points);
 	}
 }
@@ -83,40 +94,77 @@ impl GeometryInterner {
 	fn entries(&self) -> impl Iterator<Item = (&GeoId, &HashSet<GeometryPoint>)> + Clone + Send {
 		self.inner.iter()
 	}
+
+	fn points(&self) -> impl Iterator<Item = (&GeometryPoint, &HashSet<GeoId>)> {
+		self.points_to_geoids.iter()
+	}
 }
 
 impl GeometryInterner {
+	#[tracing::instrument(skip(self))]
 	fn compute_adjacencies(&self) -> BTreeMap<&GeoId, BTreeSet<&GeoId>> {
-		let maps: Vec<HashMap<&GeoId, Vec<&GeoId>>> = self
-			.entries()
-			.tuple_combinations::<(_, _)>()
-			.par_bridge()
-			.filter_map(|((a_geoid, a_points), (b_geoid, b_points))| {
-				let mut intersection = a_points.intersection(b_points);
+		tracing::info!(
+			"Computing adjacencies on {} geoids ({} points)",
+			self.inner.len(),
+			self.points_to_geoids.len()
+		);
 
-				if intersection.next().is_some() {
-					Some([(a_geoid, b_geoid), (b_geoid, a_geoid)])
+		let maps = self
+			.points()
+			.par_bridge()
+			.filter_map(|(point, containing_geoids)| {
+				if containing_geoids.len() > 1 {
+					if containing_geoids.len() > 2 {
+						let lat = &point.0[0].0;
+						let lng = &point.0[1].0;
+
+						tracing::debug!("Point {}, {} exists in {:?}", lat, lng, containing_geoids);
+					}
+
+					Some(
+						containing_geoids
+							.iter()
+							.permutations(2)
+							.map(|permutation| (permutation[0], permutation[1]))
+							.collect::<Vec<(&GeoId, &GeoId)>>(),
+					)
 				} else {
+					let block = containing_geoids.iter().next().unwrap();
+
+					let lat = &point.0[0].0;
+					let lng = &point.0[1].0;
+
+					tracing::debug!("Point {}, {} exists solely in {:?}", lat, lng, block);
 					None
 				}
 			})
-			.flatten()
-			.fold(HashMap::new, |mut map, (geoid_a, geoid_b)| {
-				map.entry(geoid_a).or_insert_with(Vec::new).push(geoid_b);
+			.fold(BTreeMap::new, |mut map, pairs: Vec<(&GeoId, &GeoId)>| {
+				for pair in pairs {
+					let geoid_a = pair.0;
+					let geoid_b = pair.1;
+
+					map
+						.entry(geoid_a)
+						.or_insert_with(BTreeSet::new)
+						.insert(geoid_b);
+				}
 				map
 			})
-			.collect();
+			.collect::<Vec<_>>();
 
-		maps.into_iter().flat_map(HashMap::into_iter).fold(
-			BTreeMap::new(),
-			|mut final_map, (id, neighbors)| {
+		tracing::info!("Collected {} individual maps; merging", maps.len());
+
+		maps
+			.into_iter()
+			.inspect(|hm| tracing::debug!("Merging {} entries", hm.len()))
+			.flat_map(BTreeMap::into_iter)
+			.fold(BTreeMap::new(), |mut final_map, (id, neighbors)| {
 				final_map
 					.entry(id)
 					.or_insert_with(BTreeSet::new)
 					.extend(neighbors);
 				final_map
-			},
-		)
+			})
 	}
 }
 
@@ -326,7 +374,7 @@ fn load_geojson(geojson: GeoJson, interner: &mut GeometryInterner) {
 	}
 }
 
-#[tracing::instrument]
+#[tracing::instrument(skip(input_file))]
 fn process_input_file(input_file: &mut File) -> GeometryInterner {
 	let input_data: String = {
 		let mut string: String = String::new();
@@ -380,7 +428,9 @@ fn main() {
 		.open(output_file)
 		.expect("failed to open output file for writing");
 
-	tracing::debug!(?output_file, "Opened output file");
+	tracing::info!(?output_file, "Opened output file");
 
 	write_adjacency_map(&mut output_file, adjacency_map);
+
+	tracing::info!("Finished writing output.");
 }
