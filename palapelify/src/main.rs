@@ -114,13 +114,6 @@ impl GeometryInterner {
 			.par_bridge()
 			.filter_map(|(point, containing_geoids)| {
 				if containing_geoids.len() > 1 {
-					if containing_geoids.len() > 2 {
-						let lat = &point.0[0].0;
-						let lng = &point.0[1].0;
-
-						tracing::debug!("Point {}, {} exists in {:?}", lat, lng, containing_geoids);
-					}
-
 					Some(
 						containing_geoids
 							.iter()
@@ -129,12 +122,6 @@ impl GeometryInterner {
 							.collect::<Vec<(&GeoId, &GeoId)>>(),
 					)
 				} else {
-					let block = containing_geoids.iter().next().unwrap();
-
-					let lat = &point.0[0].0;
-					let lng = &point.0[1].0;
-
-					tracing::debug!("Point {}, {} exists solely in {:?}", lat, lng, block);
 					None
 				}
 			})
