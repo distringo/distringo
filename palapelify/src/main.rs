@@ -104,7 +104,7 @@ impl GeometryInterner {
 	#[tracing::instrument(skip(self))]
 	fn compute_adjacencies(&self) -> BTreeMap<&GeoId, BTreeSet<&GeoId>> {
 		tracing::info!(
-			"Computing adjacencies on {} geoids ({} points)",
+			"Computing adjacencies on {} geoids ({} unique points)",
 			self.inner.len(),
 			self.points_to_geoids.len()
 		);
@@ -432,5 +432,5 @@ fn main() {
 
 	write_adjacency_map(&mut output_file, adjacency_map);
 
-	tracing::info!("Finished writing output.");
+	tracing::info!("Finished writing output");
 }
