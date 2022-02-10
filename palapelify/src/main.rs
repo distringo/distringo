@@ -117,7 +117,10 @@ impl GeometryInterner {
 							.map(|permutation| (permutation[0], permutation[1]))
 							.collect::<HashSet<(&GeoId, &GeoId)>>(),
 					)
+				} else if containing_geoids.len() == 1 {
+					None
 				} else {
+					tracing::warn!("Point has no containing GeoIds");
 					None
 				}
 			})
