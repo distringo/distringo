@@ -121,25 +121,31 @@ impl GeometryInterner {
 					None
 				}
 			})
-			.fold(BTreeMap::new, |mut map, pairs: HashSet<(&GeoId, &GeoId)>| {
-				for pair in pairs {
-					let geoid_a = pair.0;
-					let geoid_b = pair.1;
+			.fold(
+				BTreeMap::new,
+				|mut map, pairs: HashSet<(&GeoId, &GeoId)>| {
+					tracing::debug!("Folding in {} entries", pairs.len());
+
+					for pair in pairs {
+						let geoid_a = pair.0;
+						let geoid_b = pair.1;
+
+						map
+							.entry(geoid_a)
+							.or_insert_with(BTreeSet::new)
+							.insert(geoid_b);
+					}
 
 					map
-						.entry(geoid_a)
-						.or_insert_with(BTreeSet::new)
-						.insert(geoid_b);
-				}
-				map
-			})
+				},
+			)
 			.collect::<Vec<_>>();
 
 		tracing::info!("Collected {} individual maps; merging", maps.len());
 
 		maps
 			.into_iter()
-			.inspect(|hm| tracing::debug!("Merging {} entries", hm.len()))
+			.inspect(|map| tracing::debug!("Merging {} entries", map.len()))
 			.flat_map(BTreeMap::into_iter)
 			.fold(BTreeMap::new(), |mut final_map, (id, neighbors)| {
 				final_map
