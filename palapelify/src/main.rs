@@ -250,12 +250,12 @@ mod is_geoid_like {
 }
 
 fn feature_id_unknown(feature: &Feature) -> Option<&str> {
-	if let Some((key, _value)) = feature
+	if let Some((key, value)) = feature
 		.properties_iter()
 		.find(|(key, _)| is_geoid_like(key))
 	{
 		tracing::warn!(%key, "Found a GEOID-like property, but by manual search. Please consider filing an issue to add this to the list of known GEOID keys.");
-		Some(key)
+		value.as_str()
 	} else {
 		let properties: Vec<(&String, &serde_json::Value)> = feature.properties_iter().collect();
 		tracing::warn!(
