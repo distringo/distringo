@@ -84,9 +84,7 @@ impl GeometryInterner {
 
 		self.inner.insert(geoid, points);
 	}
-}
 
-impl GeometryInterner {
 	fn geoids(&self) -> impl Iterator<Item = &GeoId> + Clone + Send {
 		self.inner.keys()
 	}
@@ -98,9 +96,7 @@ impl GeometryInterner {
 	fn points(&self) -> impl Iterator<Item = (&GeometryPoint, &HashSet<GeoId>)> {
 		self.points_to_geoids.iter()
 	}
-}
 
-impl GeometryInterner {
 	#[tracing::instrument(skip(self))]
 	fn compute_adjacencies(&self) -> BTreeMap<&GeoId, BTreeSet<&GeoId>> {
 		tracing::info!(
