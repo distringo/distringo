@@ -115,13 +115,13 @@ impl GeometryInterner {
 							.iter()
 							.permutations(2)
 							.map(|permutation| (permutation[0], permutation[1]))
-							.collect::<BTreeSet<(&GeoId, &GeoId)>>(),
+							.collect::<HashSet<(&GeoId, &GeoId)>>(),
 					)
 				} else {
 					None
 				}
 			})
-			.fold(BTreeMap::new, |mut map, pairs: Vec<(&GeoId, &GeoId)>| {
+			.fold(BTreeMap::new, |mut map, pairs: HashSet<(&GeoId, &GeoId)>| {
 				for pair in pairs {
 					let geoid_a = pair.0;
 					let geoid_b = pair.1;
