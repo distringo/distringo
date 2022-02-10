@@ -115,7 +115,7 @@ impl GeometryInterner {
 							.iter()
 							.permutations(2)
 							.map(|permutation| (permutation[0], permutation[1]))
-							.collect::<Vec<(&GeoId, &GeoId)>>(),
+							.collect::<BTreeSet<(&GeoId, &GeoId)>>(),
 					)
 				} else {
 					None
