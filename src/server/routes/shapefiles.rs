@@ -1,4 +1,4 @@
-use axum::{routing::get, Json, Router};
+use axum::{extract::Path, routing::get, Json, Router};
 
 #[derive(serde::Serialize)]
 struct ShapefileList {
@@ -18,10 +18,12 @@ async fn index() -> Json<ShapefileList> {
 	})
 }
 
-async fn show() -> ShapefileList {
-	todo!()
+async fn show(Path(id): Path<String>) -> String {
+	id
 }
 
 pub(crate) fn router(_config: &config::Config) -> Router {
-	Router::new().route("/", get(index))
+	Router::new()
+		.route("/", get(index))
+		.route("/:id", get(show(id)))
 }
