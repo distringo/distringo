@@ -18,10 +18,14 @@ impl ShapefileDatabase {
 		Json(self.entries.keys().collect::<Vec<_>>())
 		// "shapefiles index"
 	}
-}
 
-async fn show(Path(id): Path<ShapefileId>) -> impl IntoResponse {
-	id
+	async fn show(&self, Path(id): Path<ShapefileId>) -> impl IntoResponse + '_ {
+		if let Some(shapefile) = self.entries.get(&id) {
+			Ok("found shapefile {}")
+		} else {
+			Err("no such shapefile")
+		}
+	}
 }
 
 pub(crate) fn router(_config: &config::Config) -> Router {
@@ -33,5 +37,5 @@ pub(crate) fn router(_config: &config::Config) -> Router {
 
 	Router::new()
 		.route("/", get(|| db.index()))
-		.route("/:id", get(show(id)))
+		.route("/:id", get(|id| db.show(id)))
 }
