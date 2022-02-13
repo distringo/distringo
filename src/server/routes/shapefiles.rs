@@ -13,11 +13,11 @@ struct ShapefileDatabase {
 	entries: HashMap<ShapefileId, ()>,
 }
 
-async fn index() -> impl IntoResponse {
-	// TODO(rye): Get this ShapefileList out of some kind of cache (and generate that on startup)
-	Json(ShapefileList {
-		shapefiles: vec!["a".to_string(), "b".to_string()],
-	})
+impl ShapefileDatabase {
+	async fn index(&self) -> impl IntoResponse + '_ {
+		Json(self.entries.keys().collect::<Vec<_>>())
+		// "shapefiles index"
+	}
 }
 
 async fn show(Path(id): Path<ShapefileId>) -> impl IntoResponse {
@@ -25,7 +25,13 @@ async fn show(Path(id): Path<ShapefileId>) -> impl IntoResponse {
 }
 
 pub(crate) fn router(_config: &config::Config) -> Router {
+	let db = ShapefileDatabase {
+		entries: HashMap::new(),
+	};
+
+	let db = Box::leak(Box::new(db));
+
 	Router::new()
-		.route("/", get(index))
+		.route("/", get(|| db.index()))
 		.route("/:id", get(show(id)))
 }
