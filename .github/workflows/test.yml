@@ -14,26 +14,19 @@ jobs:
       matrix:
         rust: [stable, beta]
     steps:
-    - name: Install the appropriate Rust toolchain with associated components
+    - name: Install the appropriate Rust toolchain
       run: |
-        rustup toolchain install ${{ matrix.rust }} -c clippy rustfmt
+        rustup toolchain install ${{ matrix.rust }}
         rustup default ${{ matrix.rust }}
     - uses: actions/checkout@v1
     - name: Run rustfmt
-      run: cargo fmt --all -- --check
+      run: |
+        rustup component add rustfmt
+        cargo fmt --all -- --check
     - name: Run clippy
-      uses: actions-rs/clippy-check@v1.0.7
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: >-
-          --workspace
-          --all-features
-          --all-targets
-          --
-          -D clippy::all
-          -W clippy::cargo
-          -W clippy::pedantic
-          -W clippy::cognitive-complexity
+      run: |
+        rustup component add clippy
+        cargo clippy --workspace --all-features --all-targets -- -D clippy::all -W clippy::cargo -W clippy::pedantic -W clippy::cognitive-complexity
 
   test:
     name: Test the code
