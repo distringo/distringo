@@ -4,8 +4,6 @@ use crate::Result;
 
 mod routes;
 
-pub struct ExecutionPlan(config::Config);
-
 #[derive(thiserror::Error, Debug)]
 pub enum AppConfigError {
 	#[error("inner configuration error")]
@@ -17,9 +15,14 @@ pub enum AppConfigError {
 	InvalidVersion,
 }
 
+#[derive(Default)]
+pub struct ExecutionPlan {
+	config: config::Config,
+}
+
 impl From<config::Config> for ExecutionPlan {
 	fn from(config: config::Config) -> Self {
-		Self(config)
+		Self { config }
 	}
 }
 
@@ -40,7 +43,7 @@ impl ExecutionPlan {
 	}
 
 	pub async fn validate(&self) -> Result<(), AppConfigError> {
-		let config = &self.0;
+		let config = &self.config;
 
 		// Verify that the version is valid.
 		let config_version = config.get_str("version")?;
@@ -70,13 +73,13 @@ impl ExecutionPlan {
 
 	fn bind_addr(&self) -> Result<SocketAddr> {
 		let host: IpAddr = self
-			.0
+			.config
 			.get_str("server.host")?
 			.parse()
 			.map_err(|_| crate::RuntimeError::InvalidServerHost)?;
 
 		let port: u16 = self
-			.0
+			.config
 			.get_int("server.port")?
 			.try_into()
 			.map_err(|_| crate::RuntimeError::InvalidServerPort)?;
@@ -87,7 +90,7 @@ impl ExecutionPlan {
 	pub async fn execute(&mut self) -> Result<()> {
 		log::trace!("Executing Execution Plan");
 
-		let config: &config::Config = &self.0;
+		let config: &config::Config = &self.config;
 
 		let socket = self.bind_addr()?;
 
