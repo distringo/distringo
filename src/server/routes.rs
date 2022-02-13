@@ -28,23 +28,22 @@ fn static_files_handler() -> MethodRouter {
 	})
 }
 
+async fn handle_error(error: tower::BoxError) -> Result<impl IntoResponse, impl IntoResponse> {
+	if error.is::<tower::timeout::error::Elapsed>() {
+		Ok(StatusCode::REQUEST_TIMEOUT)
+	} else {
+		Err((
+			StatusCode::INTERNAL_SERVER_ERROR,
+			format!("Unhandled internal error: {}", error),
+		))
+	}
+}
+
 pub(super) fn app_router(config: &config::Config) -> Result<axum::Router, RuntimeError> {
 	use axum::error_handling::HandleErrorLayer;
-	use tower::BoxError;
-
-	let handle_error_layer = HandleErrorLayer::new(|error: BoxError| async move {
-		if error.is::<tower::timeout::error::Elapsed>() {
-			Ok(StatusCode::REQUEST_TIMEOUT)
-		} else {
-			Err((
-				StatusCode::INTERNAL_SERVER_ERROR,
-				format!("Unhandled internal error: {}", error),
-			))
-		}
-	});
 
 	let error_handler = tower::ServiceBuilder::new()
-		.layer(handle_error_layer)
+		.layer(HandleErrorLayer::new(handle_error))
 		.timeout(core::time::Duration::from_secs(10))
 		.into_inner();
 
