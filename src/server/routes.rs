@@ -1,9 +1,6 @@
-use axum::{
-	error_handling::HandleErrorLayer, handler::Handler, response::IntoResponse, routing::get,
-	BoxError,
-};
+use axum::{error_handling::HandleErrorLayer, response::IntoResponse, routing::*, BoxError};
 use http::{StatusCode, Uri};
-use tower_http::trace::TraceLayer;
+use tower_http::{services::ServeDir, trace::TraceLayer};
 
 use crate::RuntimeError;
 
@@ -32,14 +29,21 @@ pub(super) fn app_router(config: &config::Config) -> Result<axum::Router, Runtim
 			}
 		}))
 		.timeout(core::time::Duration::from_secs(10))
-		.layer(TraceLayer::new_for_http())
 		.into_inner();
+
+	let static_files = any_service(ServeDir::new("dist")).handle_error(|error| async move {
+		(
+			StatusCode::INTERNAL_SERVER_ERROR,
+			format!("Yee haw: {}", error),
+		)
+	});
 
 	let router = axum::Router::new()
 		.route("/ping", get(ping))
 		.nest("/shapefiles", shapefiles::router(config))
 		.layer(error_handler)
-		.fallback(router_fallback.into_service());
+		.layer(TraceLayer::new_for_http())
+		.fallback(static_files);
 
 	Ok(router)
 }
