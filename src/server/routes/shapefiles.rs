@@ -2,11 +2,6 @@ use std::collections::HashMap;
 
 use axum::{extract::Path, response::IntoResponse, routing::get, Json, Router};
 
-#[derive(serde::Serialize)]
-struct ShapefileList {
-	shapefiles: Vec<String>,
-}
-
 type ShapefileId = String;
 
 struct ShapefileDatabase {
