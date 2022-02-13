@@ -1,4 +1,6 @@
-use axum::{extract::Path, routing::get, Json, Router};
+use std::collections::HashMap;
+
+use axum::{extract::Path, response::IntoResponse, routing::get, Json, Router};
 
 #[derive(serde::Serialize)]
 struct ShapefileList {
@@ -11,14 +13,14 @@ struct ShapefileDatabase {
 	entries: HashMap<ShapefileId, ()>,
 }
 
-async fn index() -> Json<ShapefileList> {
+async fn index() -> impl IntoResponse {
 	// TODO(rye): Get this ShapefileList out of some kind of cache (and generate that on startup)
 	Json(ShapefileList {
 		shapefiles: vec!["a".to_string(), "b".to_string()],
 	})
 }
 
-async fn show(Path(id): Path<String>) -> String {
+async fn show(Path(id): Path<ShapefileId>) -> impl IntoResponse {
 	id
 }
 
