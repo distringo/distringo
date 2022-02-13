@@ -5,6 +5,12 @@ struct ShapefileList {
 	shapefiles: Vec<String>,
 }
 
+type ShapefileId = String;
+
+struct ShapefileDatabase {
+	entries: HashMap<ShapefileId, ()>,
+}
+
 async fn index() -> Json<ShapefileList> {
 	// TODO(rye): Get this ShapefileList out of some kind of cache (and generate that on startup)
 	Json(ShapefileList {
@@ -16,6 +22,6 @@ async fn show() -> ShapefileList {
 	todo!()
 }
 
-pub(crate) fn router(config: &config::Config) -> Router {
+pub(crate) fn router(_config: &config::Config) -> Router {
 	Router::new().route("/", get(index))
 }
