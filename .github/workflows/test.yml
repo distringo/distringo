@@ -56,35 +56,19 @@ jobs:
       run: |
         rustup toolchain install ${{ matrix.rust }} --component llvm-tools-preview
         rustup default ${{ matrix.rust }}
+    - name: Install grcov
+      run: cargo install grcov
     - uses: actions/checkout@v1
-#    - name: Build with profiling
-#      run: |
-#        cargo build --workspace --all-features
-#      env:
-#        RUSTFLAGS: >
-#          -Zinstrument-coverage
     - name: Run tests with profiling
       run: |
         cargo test --workspace --all-features --no-fail-fast
       env:
+        LLVM_PROFILE_FILE: "distringo-%p-%m.profraw"
         RUSTFLAGS: >
           -Zinstrument-coverage
-#      env:
-#        CARGO_INCREMENTAL: 0
-#        RUSTFLAGS: >
-#          -Zprofile
-#          -Ccodegen-units=1
-#          -Copt-level=0
-#          -Clink-dead-code
-#          -Coverflow-checks=off
-#          -Zpanic_abort_tests
-#          -Cpanic=abort
-#        RUSTDOCFLAGS: '-Cpanic=abort'
-    - name: <temp> List all directories
-      run: ls -laR .
-    - uses: actions-rs/grcov@v0.1
-      with:
-        config: .grcov.yml
+    - name: Run grcov
+      run: >
+        grcov . -s . --binary-path ./target/debug/ -t lcov --branch --ignore-not-existing -o ./lcov.info
     - name: Upload coverage
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
