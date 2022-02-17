@@ -80,6 +80,8 @@ jobs:
 #          -Zpanic_abort_tests
 #          -Cpanic=abort
 #        RUSTDOCFLAGS: '-Cpanic=abort'
+    - name: <temp> List all directories
+      run: ls -laR .
     - uses: actions-rs/grcov@v0.1
       with:
         config: .grcov.yml
