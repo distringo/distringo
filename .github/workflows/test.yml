@@ -57,15 +57,18 @@ jobs:
         rustup toolchain install ${{ matrix.rust }} --component llvm-tools-preview
         rustup default ${{ matrix.rust }}
     - uses: actions/checkout@v1
-    - name: Build with profiling
-      run: |
-        cargo build --workspace --all-features
-      env:
-        RUSTFLAGS: >
-          -Zinstrument-coverage
+#    - name: Build with profiling
+#      run: |
+#        cargo build --workspace --all-features
+#      env:
+#        RUSTFLAGS: >
+#          -Zinstrument-coverage
     - name: Run tests with profiling
       run: |
         cargo test --workspace --all-features --no-fail-fast
+      env:
+        RUSTFLAGS: >
+          -Zinstrument-coverage
 #      env:
 #        CARGO_INCREMENTAL: 0
 #        RUSTFLAGS: >
