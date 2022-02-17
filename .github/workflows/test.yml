@@ -68,7 +68,13 @@ jobs:
           -Zinstrument-coverage
     - name: Run grcov
       run: >
-        grcov . -s . --binary-path ./target/debug/ -t lcov --branch --ignore-not-existing -o ./lcov.info
+        grcov .
+        -s .
+        --binary-path ./target/debug/
+        -t lcov
+        --branch
+        --ignore-not-existing
+        -o ./lcov.info
     - name: Upload coverage
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
