@@ -54,7 +54,7 @@ jobs:
     steps:
     - name: Install the appropriate Rust toolchain
       run: |
-        rustup toolchain install ${{ matrix.rust }}
+        rustup toolchain install ${{ matrix.rust }} --component llvm-tools-preview
         rustup default ${{ matrix.rust }}
     - uses: actions/checkout@v1
     - name: Run tests with profiling
