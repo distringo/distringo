@@ -59,7 +59,7 @@ jobs:
     - uses: actions/checkout@v1
     - name: Build with profiling
       run: |
-        cargo build --workspace --all-features --no-fail-fast
+        cargo build --workspace --all-features
       env:
         RUSTFLAGS: >
           -Zinstrument-coverage
