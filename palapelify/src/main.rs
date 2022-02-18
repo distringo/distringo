@@ -400,6 +400,13 @@ mod feature_id {
 		}
 	}
 
+	fn feature_with_geoids(geoid_keys: &[&str]) -> Feature {
+		Feature {
+			properties: properties(geoid_keys),
+			..blank_feature()
+		}
+	}
+
 	#[test]
 	fn known_geoid10() {
 		let feature = feature_with_geoid("GEOID10");
@@ -409,6 +416,12 @@ mod feature_id {
 	#[test]
 	fn known_geoid20() {
 		let feature = feature_with_geoid("GEOID20");
+		assert_eq!(feature_id(&feature), Some(REAL_GEOID));
+	}
+
+	#[test]
+	fn known_geoid10_and_geoid20() {
+		let feature = feature_with_geoids(&["GEOID10", "GEOID20"]);
 		assert_eq!(feature_id(&feature), Some(REAL_GEOID));
 	}
 }
