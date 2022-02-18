@@ -31,25 +31,21 @@ impl core::fmt::Display for GeoId {
 #[cfg(test)]
 mod geoid {
 	use super::GeoId;
-	#[cfg(test)]
-	mod clone {
-		use super::GeoId;
-		#[test]
-		fn works() {
-			let string_value: String = "I am a string!".to_string();
-			assert!(core::ptr::eq(&string_value, &string_value));
+	#[test]
+	fn clone() {
+		let string: String = "I am a string!".to_string();
+		assert!(core::ptr::eq(&string, &string));
 
-			let geoid: GeoId = GeoId(string_value.clone());
-			assert!(!core::ptr::eq(&string_value, &geoid.0));
+		let geoid: GeoId = GeoId(string.clone());
+		assert!(!core::ptr::eq(&string, &geoid.0));
 
-			let clone = geoid.clone();
-			assert!(!core::ptr::eq(&geoid, &clone));
+		let clone = geoid.clone();
+		assert!(!core::ptr::eq(&geoid, &clone));
 
-			assert!(!core::ptr::eq(&geoid.0, &clone.0));
+		assert!(!core::ptr::eq(&geoid.0, &clone.0));
 
-			assert_eq!(&geoid.0, &string_value);
-			assert_eq!(&clone.0, &string_value);
-		}
+		assert_eq!(&geoid.0, &string);
+		assert_eq!(&clone.0, &string);
 	}
 }
 
