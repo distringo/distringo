@@ -1,33 +1,67 @@
-pub use distringo::Result;
+use std::net::{IpAddr, SocketAddr};
 
-pub mod routes;
+use crate::Result;
 
-async fn handle_rejection(
-	err: warp::Rejection,
-) -> core::result::Result<impl warp::Reply, core::convert::Infallible> {
-	if err.is_not_found() {
-		Ok(warp::reply::with_status(
-			warp::reply::html(include_str!("404.html")),
-			http::StatusCode::NOT_FOUND,
-		))
-	} else {
-		log::warn!("unhandled rejection: {:?}", err);
-		Ok(warp::reply::with_status(
-			warp::reply::html(include_str!("500.html")),
-			http::StatusCode::INTERNAL_SERVER_ERROR,
-		))
-	}
+mod routes;
+
+#[derive(thiserror::Error, Debug)]
+pub enum AppConfigError {
+	#[error("inner configuration error")]
+	Config(#[from] config::ConfigError),
+	#[error("version parse error")]
+	Semver(#[from] semver::Error),
+
+	#[error("configuration version does not meet requirements")]
+	InvalidVersion,
 }
 
-pub struct ExecutionPlan(config::Config);
+#[derive(Default)]
+pub struct ExecutionPlan {
+	config: config::Config,
+}
 
 impl From<config::Config> for ExecutionPlan {
 	fn from(config: config::Config) -> Self {
-		Self(config)
+		Self { config }
 	}
 }
 
 impl ExecutionPlan {
+	fn validate_version(version: &str) -> Result<(), AppConfigError> {
+		const VERSION_REQUIREMENT: &str = "~0.0.0";
+
+		let requirement = semver::VersionReq::parse(VERSION_REQUIREMENT)
+			.expect("internally-generated version requirement was invalid");
+
+		let version: semver::Version = version.parse()?;
+
+		if !requirement.matches(&version) {
+			Err(AppConfigError::InvalidVersion)
+		} else {
+			Ok(())
+		}
+	}
+
+	pub async fn validate(&self) -> Result<(), AppConfigError> {
+		let config = &self.config;
+
+		// Verify that the version is valid.
+		let config_version = config.get_str("version")?;
+		Self::validate_version(&config_version)?;
+
+		// Load up all the dataset configurations.
+		for (identifier, value) in config.get_table("datasets")? {
+			println!("{:?}, {:?}", identifier, value);
+		}
+
+		// Load up all the shapefile cofigurations.
+		for (identifier, value) in config.get_table("shapefiles")? {
+			println!("{:?}, {:?}", identifier, value);
+		}
+
+		Ok(())
+	}
+
 	pub fn prepare(&self) -> Result<()> {
 		// TODO(rye): Instead of doing nothing, perform a dry run of creating the
 		// routes here so as to early-die if something is amiss.
@@ -37,25 +71,36 @@ impl ExecutionPlan {
 		Ok(())
 	}
 
+	fn bind_addr(&self) -> Result<SocketAddr> {
+		let host: IpAddr = self
+			.config
+			.get_str("server.host")?
+			.parse()
+			.map_err(|_| crate::RuntimeError::InvalidServerHost)?;
+
+		let port: u16 = self
+			.config
+			.get_int("server.port")?
+			.try_into()
+			.map_err(|_| crate::RuntimeError::InvalidServerPort)?;
+
+		Ok(SocketAddr::new(host, port))
+	}
+
 	pub async fn execute(&mut self) -> Result<()> {
-		use std::net::{IpAddr, SocketAddr};
+		log::trace!("Executing Execution Plan");
 
-		let socket = {
-			let config: &config::Config = &self.0;
+		let config: &config::Config = &self.config;
 
-			let host: IpAddr = config
-				.get_str("server.host")?
-				.parse()
-				.map_err(|_| distringo::Error::InvalidServerHost)?;
-			let port: u16 = config
-				.get_int("server.port")?
-				.try_into()
-				.map_err(|_| distringo::Error::InvalidServerPort)?;
+		let socket = self.bind_addr()?;
 
-			SocketAddr::new(host, port)
-		};
+		tracing::debug!("socket: {:?}", socket);
 
-		warp::serve(routes::routes(&self.0)?).run(socket).await;
+		let router = routes::app_router(config)?;
+
+		axum::Server::bind(&socket)
+			.serve(router.into_make_service())
+			.await?;
 
 		Ok(())
 	}

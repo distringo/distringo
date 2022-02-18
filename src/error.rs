@@ -6,7 +6,6 @@ use std::io;
 pub enum Error {
 	Io(io::Error),
 	Csv(csv::Error),
-	Config(config::ConfigError),
 	GeoJson(geojson::Error),
 	ParseInt(num::ParseIntError),
 
@@ -21,7 +20,7 @@ impl core::fmt::Display for Error {
 		match self {
 			Error::Io(inner) => writeln!(f, "io error: {}", inner),
 			Error::Csv(inner) => writeln!(f, "csv error: {}", inner),
-			Error::Config(inner) => writeln!(f, "config error: {}", inner),
+
 			Error::GeoJson(inner) => writeln!(f, "geojson error: {}", inner),
 			_ => todo!(),
 		}
@@ -41,12 +40,6 @@ impl From<io::Error> for Error {
 impl From<csv::Error> for Error {
 	fn from(e: csv::Error) -> Error {
 		Self::Csv(e)
-	}
-}
-
-impl From<config::ConfigError> for Error {
-	fn from(e: config::ConfigError) -> Error {
-		Self::Config(e)
 	}
 }
 

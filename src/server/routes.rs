@@ -1,23 +1,60 @@
-use warp::{filters::BoxedFilter, fs, path, Filter, Reply};
+use axum::{response::IntoResponse, routing::*};
+use http::{StatusCode, Uri};
+use tower_http::{services::ServeDir, trace::TraceLayer};
 
-pub mod api;
+use crate::RuntimeError;
 
-pub fn routes(cfg: &config::Config) -> distringo::Result<BoxedFilter<(impl Reply,)>> {
-	let slash = warp::get()
-		.and(path::end())
-		.and(fs::file("./dist/index.html"));
+mod shapefiles;
 
-	let static_files = warp::get().and(fs::dir("./dist/")).and(path::end());
+#[tracing::instrument]
+async fn ping() -> Result<String, StatusCode> {
+	Ok("pong".to_string())
+}
 
-	let file_routes = slash.or(static_files);
+#[tracing::instrument]
+async fn router_fallback(uri: Uri) -> impl IntoResponse {
+	(StatusCode::NOT_FOUND, format!("uri {} not found", uri))
+}
 
-	let api_routes = api::api(cfg)?;
+/// Constructs a Service that can serve as a fallback.
+fn static_files_handler() -> MethodRouter {
+	let serve_dir = ServeDir::new("dist");
 
-	let root = api_routes
-		.or(file_routes)
-		.with(warp::log("distringo"))
-		.recover(super::handle_rejection)
-		.boxed();
+	get_service(serve_dir).handle_error(|error: std::io::Error| async move {
+		(
+			StatusCode::INTERNAL_SERVER_ERROR,
+			format!("Unhandled internal server error in ServeDir: {}", error),
+		)
+	})
+}
 
-	Ok(root)
+async fn handle_error(error: tower::BoxError) -> Result<impl IntoResponse, impl IntoResponse> {
+	if error.is::<tower::timeout::error::Elapsed>() {
+		Ok(StatusCode::REQUEST_TIMEOUT)
+	} else {
+		Err((
+			StatusCode::INTERNAL_SERVER_ERROR,
+			format!("Unhandled internal error: {}", error),
+		))
+	}
+}
+
+pub(super) fn app_router(config: &config::Config) -> Result<axum::Router, RuntimeError> {
+	use axum::error_handling::HandleErrorLayer;
+
+	let error_handler = tower::ServiceBuilder::new()
+		.layer(HandleErrorLayer::new(handle_error))
+		.timeout(core::time::Duration::from_secs(10))
+		.into_inner();
+
+	let static_files_fallback = static_files_handler();
+
+	let router = axum::Router::new()
+		.route("/ping", get(ping))
+		.nest("/shapefiles", shapefiles::router(config))
+		.layer(TraceLayer::new_for_http())
+		.layer(error_handler)
+		.fallback(static_files_fallback);
+
+	Ok(router)
 }
