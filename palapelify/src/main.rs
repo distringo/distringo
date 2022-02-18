@@ -377,6 +377,21 @@ mod feature_id {
 		Some(map)
 	}
 
+	fn properties_with_values(
+		geoid_keys_and_values: &[(&str, &str)],
+	) -> Option<serde_json::Map<String, serde_json::Value>> {
+		let mut map = serde_json::Map::new();
+
+		for (key, value) in geoid_keys_and_values {
+			map.insert(
+				key.to_string(),
+				serde_json::Value::String(value.to_string()),
+			);
+		}
+
+		Some(map)
+	}
+
 	fn blank_feature() -> Feature {
 		let bbox = None;
 		let properties = None;
@@ -407,6 +422,13 @@ mod feature_id {
 		}
 	}
 
+	fn feature_with_geoids_and_values(geoid_keys_and_values: &[(&str, &str)]) -> Feature {
+		Feature {
+			properties: properties_with_values(geoid_keys_and_values),
+			..blank_feature()
+		}
+	}
+
 	#[test]
 	fn known_geoid10() {
 		let feature = feature_with_geoid("GEOID10");
@@ -421,8 +443,32 @@ mod feature_id {
 
 	#[test]
 	fn known_geoid10_and_geoid20() {
-		let feature = feature_with_geoids(&["GEOID10", "GEOID20"]);
+		let feature = feature_with_geoids_and_values(&[
+			("GEOID10", "value for GEOID10"),
+			("GEOID20", "value for GEOID20"),
+		]);
+		assert_eq!(feature_id(&feature), Some("value for GEOID10"));
+	}
+
+	#[test]
+	fn mixed_known_geoid20_and_unknown_geoid30() {
+		let feature = feature_with_geoids_and_values(&[
+			("GEOID20", "value for GEOID20"),
+			("GEOID30", "value for GEOID30"),
+		]);
+		assert_eq!(feature_id(&feature), Some("value for GEOID20"));
+	}
+
+	#[test]
+	fn unknown_geoid30() {
+		let feature = feature_with_geoid("GEOID30");
 		assert_eq!(feature_id(&feature), Some(REAL_GEOID));
+	}
+
+	#[test]
+	fn empty_feature() {
+		let feature = blank_feature();
+		assert_eq!(feature_id(&feature), None);
 	}
 }
 
