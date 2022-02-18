@@ -14,6 +14,14 @@ datasets:
       file02: in000022010.pl
       file03: in000032010.pl
 
+  in2020-pl94_171:
+    schema: 2020/pl94_171.yaml
+    files:
+      geo: ingeo2020.pl
+      file01: in000012020.pl
+      file02: in000022020.pl
+      file03: in000032020.pl
+
 shapefiles:
   tl_2010_18157_tabblock:
     type: tabular_block
@@ -27,7 +35,7 @@ sessions:
     shapefiles:
       - tl_2010_18157_tabblock
 
-  tippecanoe-2020
+  tippecanoe-2020:
     name: "tippecanoe county 2020"
     datasets:
       - in2020-pl94_171
