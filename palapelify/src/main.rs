@@ -47,6 +47,14 @@ mod geoid {
 		assert_eq!(&geoid.0, &string);
 		assert_eq!(&clone.0, &string);
 	}
+
+	#[test]
+	fn from_string() {
+		let string: String = "I am a string!".to_string();
+
+		let geoid: GeoId = string.clone().into();
+		assert_eq!(geoid.0, string);
+	}
 }
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
