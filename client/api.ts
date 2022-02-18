@@ -1,4 +1,4 @@
-const apiUri = `${window.location.origin}/api/v0`;
+const apiUri = `${window.location.origin}`;
 
 export const API_ROUTE = (part: string) => `${apiUri}/${part}`;
 
