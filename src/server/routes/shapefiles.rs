@@ -9,13 +9,15 @@ struct ShapefileDatabase {
 }
 
 impl ShapefileDatabase {
+	#[tracing::instrument(skip(self))]
 	async fn index(&self) -> impl IntoResponse + '_ {
 		Json(self.entries.keys().collect::<Vec<_>>())
-		// "shapefiles index"
 	}
 
+	#[tracing::instrument(skip(self))]
 	async fn show(&self, Path(id): Path<ShapefileId>) -> impl IntoResponse + '_ {
 		if let Some(shapefile) = self.entries.get(&id) {
+			tracing::debug!(?id, "Retrieved shapefile");
 			Ok("found shapefile {}")
 		} else {
 			Err("no such shapefile")
@@ -23,7 +25,7 @@ impl ShapefileDatabase {
 	}
 }
 
-pub(crate) fn router(_config: &config::Config) -> Router {
+pub(crate) fn router(config: &config::Config) -> Router {
 	let db = ShapefileDatabase {
 		entries: HashMap::new(),
 	};
