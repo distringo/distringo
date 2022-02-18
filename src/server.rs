@@ -1,4 +1,7 @@
-use std::net::{IpAddr, SocketAddr};
+use std::{
+	collections::HashMap,
+	net::{IpAddr, SocketAddr},
+};
 
 use crate::Result;
 
@@ -15,14 +18,20 @@ pub enum AppConfigError {
 	InvalidVersion,
 }
 
+type DatasetId = String;
+
 #[derive(Default)]
 pub struct ExecutionPlan {
 	config: config::Config,
+	datasets: HashMap<DatasetId, ()>,
 }
 
 impl From<config::Config> for ExecutionPlan {
 	fn from(config: config::Config) -> Self {
-		Self { config }
+		Self {
+			config,
+			..Default::default()
+		}
 	}
 }
 
@@ -35,10 +44,10 @@ impl ExecutionPlan {
 
 		let version: semver::Version = version.parse()?;
 
-		if !requirement.matches(&version) {
-			Err(AppConfigError::InvalidVersion)
-		} else {
+		if requirement.matches(&version) {
 			Ok(())
+		} else {
+			Err(AppConfigError::InvalidVersion)
 		}
 	}
 
@@ -88,13 +97,13 @@ impl ExecutionPlan {
 	}
 
 	pub async fn execute(&mut self) -> Result<()> {
-		log::trace!("Executing Execution Plan");
+		tracing::trace!("Executing Execution Plan");
 
 		let config: &config::Config = &self.config;
 
 		let socket = self.bind_addr()?;
 
-		tracing::debug!("socket: {:?}", socket);
+		tracing::trace!(?socket);
 
 		let router = routes::app_router(config)?;
 

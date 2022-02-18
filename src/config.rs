@@ -1,7 +1,12 @@
 use std::collections::HashMap;
 
-struct DatasetConfig {
-	identifier: String,
-	schema_file: String,
+struct Dataset {
+	id: String,
+	schema: String,
 	files: HashMap<String, String>,
+}
+
+struct Shapefile {
+	id: String,
+	file: String,
 }
