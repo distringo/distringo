@@ -84,6 +84,10 @@ definitions:
     "56": "Wyoming"
     "72": "Puerto Rico"
 
+  county:
+    - ["001", "507"]: "County or equivalent area code"
+    - ["510", "840"]: "Independent city code"
+
 fields:
   geo:
     # Record Codes
@@ -93,8 +97,102 @@ fields:
     - { name: "GEOCOMP", length: 2, start: 11, type: AN }
     - { name: "CHARITER", length: 3, start: 13, type: AN }
     - { name: "CIFSN", length: 2, start: 16, type: AN }
-    - { name: "LOGRECNO ", length: 7, start: 18, type: N }
+    - { name: "LOGRECNO", length: 7, start: 18, type: N, key: true }
 
     # Geographic Area Codes
     - { name: "REGION", length: 1, start: 25, type: AN, options: { definition: "region" } }
     - { name: "DIVISION", length: 1, start: 26, type: AN, options: { definition: "division" } }
+    - { name: "STATE", length: 2, start: 27, type: AN, options: { definition: "state" } }
+    - { name: "COUNTY", length: 3, start: 29, type: AN, options: { definition: "county" } }
+    # TODO: COUNTYCC
+    # TODO: COUNTYSC
+    # TODO: COUSUB
+    # TODO: COUSUBCC
+    # TODO: COUSUBSC
+    # TODO: PLACE
+    # TODO: PLACECC
+    # TODO: PLACESC
+    - { name: "TRACT", length: 6, start: 54, type: AN, validator: ["000100", "998999"] }
+    - { name: "BLKGRP", length: 1, start: 60, type: AN }
+    - { name: "BLOCK", length: 4, start: 61, type: AN }
+    # TODO: IUC
+    # TODO: CONCIT
+    # TODO: CONCITCC
+    # TODO: CONCITSC
+    # TODO: AIANHH
+    # TODO: AIANHHFP
+    # TODO: AIANHHCC
+    # TODO: AIHHTLI
+    # TODO: AITSCE
+    # TODO: AITS
+    # TODO: AITSCC
+    # TODO: TTRACT
+    # TODO: TBLKGRP
+    # TODO: ANRC
+    # TODO: ANRCCC
+    # TODO: CBSA
+    # TODO: CBSASC
+    # TODO: METDIV
+    # TODO: CSA
+    # TODO: NECTA
+    # TODO: NECTASC
+    # TODO: NECTADIV
+    # TODO: CNECTA
+    # TODO: CBSAPCI
+    # TODO: NECTAPCI
+    # TODO: UA
+    # TODO: UASC
+    # TODO: UATYPE
+    # TODO: UR
+    # TODO: CD
+    # TODO: SLDU
+    # TODO: SLDL
+    # TODO: VTD
+    # TODO: VTDI
+    # TODO: RESERVE2
+    # TODO: ZCTAS
+    # TODO: SUBMCD
+    # TODO: SUBMCDCC
+    # TODO: SDELM
+    # TODO: SDSEC
+    # TODO: SDUNI
+
+    # TODO: AREALAND
+    # TODO: AREAWATR
+    # TODO: NAME
+    # TODO: FUNCSTAT
+    # TODO: GCUNI
+    # TODO: POP100
+    # TODO: HU100
+    # TODO: INTPTLAT
+    # TODO: INTPTLON
+    # TODO: LSADC
+    # TODO: PARTFLAG
+
+    # TODO: RESERVE3
+    # TODO: UGA
+    # TODO: STATENS
+    # TODO: COUNTYNS
+    # TODO: COUSUBNS
+    # TODO: PLACENS
+    # TODO: CONCITNS
+    # TODO: AIANHHNS
+    # TODO: AITSNS
+    # TODO: ANRCNS
+    # TODO: SUBMCDNS
+    # TODO: CD113
+    # TODO: CD114
+    # TODO: CD115
+    # TODO: SLDU2
+    # TODO: SLDU3
+    # TODO: SLDU4
+    # TODO: SLDL2
+    # TODO: SLDL3
+    # TODO: SLDL4
+    # TODO: AIANHHSC
+    # TODO: CSASC
+    # TODO: CNECTASC
+    # TODO: MEMI
+    # TODO: NMEMI
+    # TODO: PUMA
+    # TODO: RESERVED
