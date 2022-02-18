@@ -405,6 +405,12 @@ mod feature_id {
 		let feature = feature_with_geoid("GEOID10");
 		assert_eq!(feature_id(&feature), Some(REAL_GEOID));
 	}
+
+	#[test]
+	fn known_geoid20() {
+		let feature = feature_with_geoid("GEOID20");
+		assert_eq!(feature_id(&feature), Some(REAL_GEOID));
+	}
 }
 
 #[tracing::instrument(skip(adjacency_map))]
