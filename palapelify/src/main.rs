@@ -358,6 +358,55 @@ fn feature_id(feature: &Feature) -> Option<&str> {
 	feature_id_known(feature).or_else(|| feature_id_unknown(feature))
 }
 
+#[cfg(test)]
+mod feature_id {
+	use super::{feature_id, Feature};
+
+	const REAL_GEOID: &str = "I am definitely a real GEOID";
+
+	fn properties(geoid_keys: &[&str]) -> Option<serde_json::Map<String, serde_json::Value>> {
+		let mut map = serde_json::Map::new();
+
+		for key in geoid_keys {
+			map.insert(
+				key.to_string(),
+				serde_json::Value::String(REAL_GEOID.to_string()),
+			);
+		}
+
+		Some(map)
+	}
+
+	fn blank_feature() -> Feature {
+		let bbox = None;
+		let properties = None;
+		let geometry = None;
+		let id = None;
+		let foreign_members = None;
+
+		Feature {
+			bbox,
+			properties,
+			geometry,
+			id,
+			foreign_members,
+		}
+	}
+
+	fn feature_with_geoid(geoid_key: &str) -> Feature {
+		Feature {
+			properties: properties(&[geoid_key]),
+			..blank_feature()
+		}
+	}
+
+	#[test]
+	fn known_geoid10() {
+		let feature = feature_with_geoid("GEOID10");
+		assert_eq!(feature_id(&feature), Some(REAL_GEOID));
+	}
+}
+
 #[tracing::instrument(skip(adjacency_map))]
 fn write_adjacency_map(file: &mut File, adjacency_map: BTreeMap<&GeoId, BTreeSet<&GeoId>>) {
 	tracing::debug!(?file, "Writing adjacency map");
