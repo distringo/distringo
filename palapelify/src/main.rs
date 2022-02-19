@@ -60,17 +60,45 @@ mod geoid {
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct GeoScalar(i32);
 
-impl From<f32> for GeoScalar {
-	fn from(f32: f32) -> Self {
-		debug_assert!(f32 < 180.00 && f32 > -180.0);
+impl From<f64> for GeoScalar {
+	fn from(f64: f64) -> Self {
+		debug_assert!(f64 < 180.00 && f64 > -180.0);
 
-		Self((f32 * 1E6).trunc() as i32)
+		Self((f64 * 1E6).trunc() as i32)
 	}
 }
 
-impl From<GeoScalar> for f32 {
-	fn from(geo_scalar: GeoScalar) -> f32 {
-		(geo_scalar.0 as f32) / 1E6
+#[cfg(test)]
+mod geoscalar {
+	use super::GeoScalar;
+
+	#[cfg(test)]
+	mod from_f64 {
+		use super::GeoScalar;
+
+		impl core::fmt::Debug for GeoScalar {
+			fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+				f.debug_tuple("GeoScalar").field(&self.0).finish()
+			}
+		}
+
+		#[test]
+		fn converts_positive_in_range() {
+			let degrees: f64 = 87.31275;
+			assert_eq!(GeoScalar::from(degrees), GeoScalar(87312750));
+		}
+
+		#[test]
+		fn converts_negative_in_range() {
+			let degrees: f64 = -37.172718;
+			assert_eq!(GeoScalar::from(degrees), GeoScalar(-37172718));
+		}
+	}
+}
+
+impl From<GeoScalar> for f64 {
+	fn from(geo_scalar: GeoScalar) -> f64 {
+		(geo_scalar.0 as f64) / 1E6
 	}
 }
 
@@ -83,8 +111,8 @@ struct GeometryInterner {
 	points_to_geoids: HashMap<GeometryPoint, HashSet<GeoId>>,
 }
 
-impl From<geo::Coordinate<f32>> for GeometryPoint {
-	fn from(coordinate: geo::Coordinate<f32>) -> Self {
+impl From<geo::Coordinate<f64>> for GeometryPoint {
+	fn from(coordinate: geo::Coordinate<f64>) -> Self {
 		GeometryPoint([coordinate.y.into(), coordinate.x.into()])
 	}
 }
@@ -99,7 +127,7 @@ impl GeometryInterner {
 		self.inner.get(geoid)
 	}
 
-	fn insert(&mut self, geoid: GeoId, geometry: geo::Geometry<f32>) {
+	fn insert(&mut self, geoid: GeoId, geometry: geo::Geometry<f64>) {
 		let points: HashSet<GeometryPoint> = geometry.coords_iter().map(GeometryPoint::from).collect();
 
 		for point in points.iter() {
@@ -492,7 +520,7 @@ fn load_geojson(geojson: GeoJson, interner: &mut GeometryInterner) {
 				.map(ToString::to_string)
 				.map(GeoId::from);
 
-			let geometry: Option<geo_types::Geometry<f32>> =
+			let geometry: Option<geo_types::Geometry<f64>> =
 				feature.geometry.map(TryFrom::try_from).and_then(Result::ok);
 
 			match (geoid, geometry) {
