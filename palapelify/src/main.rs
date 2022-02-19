@@ -93,6 +93,20 @@ mod geoscalar {
 			let degrees: f64 = -37.172718;
 			assert_eq!(GeoScalar::from(degrees), GeoScalar(-37172718));
 		}
+
+		#[test]
+		#[should_panic]
+		fn asserts_in_range_positive() {
+			let degrees: f64 = 180.0;
+			let _ = GeoScalar::from(degrees);
+		}
+
+		#[test]
+		#[should_panic]
+		fn asserts_in_range_negative() {
+			let degrees: f64 = -180.0;
+			let _ = GeoScalar::from(degrees);
+		}
 	}
 }
 
