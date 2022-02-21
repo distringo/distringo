@@ -41,7 +41,7 @@ axum = "0.4.4"
 http = "0.2.6"
 hyper = "0.14.17"
 tower = { version = "0.4.11", features = ["util", "timeout"] }
-tower-http = { version = "0.2.1", features = ["add-extension", "fs", "trace"] }
+tower-http = { version = "0.2.3", features = ["add-extension", "fs", "trace"] }
 
 
 [dev-dependencies]
