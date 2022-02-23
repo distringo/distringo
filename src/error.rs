@@ -4,10 +4,10 @@ use std::io;
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum Error {
-	Io(io::Error),
-	Csv(csv::Error),
-	GeoJson(geojson::Error),
-	ParseInt(num::ParseIntError),
+	Io(Box<io::Error>),
+	Csv(Box<csv::Error>),
+	GeoJson(Box<geojson::Error>),
+	ParseInt(Box<num::ParseIntError>),
 
 	InvalidGeoId,
 
@@ -33,24 +33,24 @@ impl std::error::Error for Error {}
 
 impl From<io::Error> for Error {
 	fn from(e: io::Error) -> Error {
-		Self::Io(e)
+		Self::Io(Box::new(e))
 	}
 }
 
 impl From<csv::Error> for Error {
 	fn from(e: csv::Error) -> Error {
-		Self::Csv(e)
+		Self::Csv(Box::new(e))
 	}
 }
 
 impl From<geojson::Error> for Error {
 	fn from(e: geojson::Error) -> Error {
-		Self::GeoJson(e)
+		Self::GeoJson(Box::new(e))
 	}
 }
 
 impl From<num::ParseIntError> for Error {
 	fn from(e: num::ParseIntError) -> Error {
-		Self::ParseInt(e)
+		Self::ParseInt(Box::new(e))
 	}
 }
