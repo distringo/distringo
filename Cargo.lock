@@ -270,7 +270,7 @@ dependencies = [
  "csv",
  "fnv",
  "futures",
- "geo 0.18.0",
+ "geo",
  "geojson",
  "http",
  "hyper",
@@ -447,22 +447,9 @@ dependencies = [
 
 [[package]]
 name = "geo"
-version = "0.17.1"
+version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb5120badf60b67440af049f8c1a265aa44bdccc34027a5bb39eb3b081c56526"
-dependencies = [
- "geo-types",
- "geographiclib-rs",
- "num-traits",
- "robust",
- "rstar",
-]
-
-[[package]]
-name = "geo"
-version = "0.18.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "02bf7fb342abefefb0abbb8d033f37233e6f857a1a970805d15f96560834d699"
+checksum = "61faf6a68f9432b5287c393268e86a07e4dfed79e6e0962b0e6e59b2f70c77d8"
 dependencies = [
  "geo-types",
  "geographiclib-rs",
@@ -474,9 +461,9 @@ dependencies = [
 
 [[package]]
 name = "geo-types"
-version = "0.7.2"
+version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8bd2e95dd9f5c8ff74159ed9205ad7fd239a9569173a550863976421b45d2bb"
+checksum = "658ffd4025e593f0b64e8fa7a1afc4082e4471ac823034b9d4e338edc9adc6fb"
 dependencies = [
  "approx",
  "num-traits",
@@ -825,7 +812,7 @@ name = "palapelify"
 version = "0.1.0"
 dependencies = [
  "clap",
- "geo 0.17.1",
+ "geo",
  "geo-types",
  "geojson",
  "itertools",
