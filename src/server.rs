@@ -55,7 +55,7 @@ impl ExecutionPlan {
 		let config = &self.config;
 
 		// Verify that the version is valid.
-		let config_version = config.get_str("version")?;
+		let config_version = config.get_string("version")?;
 		Self::validate_version(&config_version)?;
 
 		// Load up all the dataset configurations.
@@ -83,7 +83,7 @@ impl ExecutionPlan {
 	fn bind_addr(&self) -> Result<SocketAddr> {
 		let host: IpAddr = self
 			.config
-			.get_str("server.host")?
+			.get_string("server.host")?
 			.parse()
 			.map_err(|_| crate::RuntimeError::InvalidServerHost)?;
 
