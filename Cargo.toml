@@ -26,7 +26,7 @@ regex = "1.5.5"
 semver = "1.0.6"
 
 # Runtime
-config = { version = "0.12.0", default_features = false, features = ["json", "yaml"] }
+config = { version = "0.13.0", default_features = false, features = ["json", "yaml"] }
 futures = "0.3"
 log = "0.4.14"
 thiserror = "1.0.30"
