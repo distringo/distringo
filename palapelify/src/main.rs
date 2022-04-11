@@ -64,6 +64,21 @@ impl From<f64> for GeoScalar {
 	fn from(f64: f64) -> Self {
 		debug_assert!(f64 < 180.00 && f64 > -180.0);
 
+		// Casting `f64` to `i32`, in general, _may_ lead to a truncation.
+		//
+		// However, in this case, this is expected to not be possible on realistic inputs.
+		//
+		// `f64` is guaranteed to be in the range (-180.0, 180.0).
+		//
+		// Multiplying a value in this range by 1E6 produces a f64 in the range (-1.0E8, 1.0E8).
+		// However, the range for `i32` is (-2.14E9, 2.14E9), which is larger.
+		//
+		// Since the range of expected values for this `From` impl fits squarely within the range we
+		// are concerned about, I `allow(clippy::cast_possible_truncation)` since this is a false positive.
+		// This is also checked in debug mode (via debug_assert).
+		//
+		// TODO(rye): Handle this semantically with a `TryFrom` impl instead.
+		#[allow(clippy::cast_possible_truncation)]
 		Self((f64 * 1E6).trunc() as i32)
 	}
 }
