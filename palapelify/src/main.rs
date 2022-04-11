@@ -159,7 +159,7 @@ impl GeometryInterner {
 	fn insert(&mut self, geoid: GeoId, geometry: &geo::Geometry<f64>) {
 		let points: HashSet<GeometryPoint> = geometry.coords_iter().map(GeometryPoint::from).collect();
 
-		for point in points.iter() {
+		for point in &points {
 			let point: GeometryPoint = point.clone();
 			self
 				.points_to_geoids
