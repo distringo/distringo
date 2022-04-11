@@ -121,7 +121,7 @@ struct GeometryPoint([GeoScalar; 2]);
 
 #[derive(Default)]
 struct GeometryInterner {
-	inner: HashMap<GeoId, HashSet<GeometryPoint>>,
+	geometry_points: HashMap<GeoId, HashSet<GeometryPoint>>,
 	points_to_geoids: HashMap<GeometryPoint, HashSet<GeoId>>,
 }
 
@@ -138,7 +138,7 @@ impl GeometryInterner {
 	}
 
 	fn get(&self, geoid: &GeoId) -> Option<&HashSet<GeometryPoint>> {
-		self.inner.get(geoid)
+		self.geometry_points.get(geoid)
 	}
 
 	fn insert(&mut self, geoid: GeoId, geometry: geo::Geometry<f64>) {
@@ -153,15 +153,15 @@ impl GeometryInterner {
 				.insert(GeoId(geoid.0.clone()));
 		}
 
-		self.inner.insert(geoid, points);
+		self.geometry_points.insert(geoid, points);
 	}
 
 	fn geoids(&self) -> impl Iterator<Item = &GeoId> + Clone + Send {
-		self.inner.keys()
+		self.geometry_points.keys()
 	}
 
 	fn entries(&self) -> impl Iterator<Item = (&GeoId, &HashSet<GeometryPoint>)> + Clone + Send {
-		self.inner.iter()
+		self.geometry_points.iter()
 	}
 
 	fn points(&self) -> impl Iterator<Item = (&GeometryPoint, &HashSet<GeoId>)> {
@@ -172,7 +172,7 @@ impl GeometryInterner {
 	fn compute_adjacencies(&self) -> BTreeMap<&GeoId, BTreeSet<&GeoId>> {
 		tracing::info!(
 			"Computing adjacencies on {} geoids ({} unique points)",
-			self.inner.len(),
+			self.geometry_points.len(),
 			self.points_to_geoids.len()
 		);
 
