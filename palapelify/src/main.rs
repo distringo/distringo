@@ -127,7 +127,7 @@ mod geoscalar {
 
 impl From<GeoScalar> for f64 {
 	fn from(geo_scalar: GeoScalar) -> f64 {
-		(geo_scalar.0 as f64) / 1E6
+		f64::from(geo_scalar.0) / 1E6
 	}
 }
 
