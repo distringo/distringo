@@ -194,21 +194,23 @@ impl GeometryInterner {
 		let maps = self
 			.points()
 			.par_bridge()
-			.filter_map(|(point, containing_geoids)| match containing_geoids.len() {
-				2.. => Some(
-					containing_geoids
-						.iter()
-						.permutations(2)
-						.map(|permutation| (permutation[0], permutation[1]))
-						.collect::<HashSet<(&GeoId, &GeoId)>>(),
-				),
-				1 => None,
-				0 => {
-					tracing::warn!("Point has no containing GeoIds");
-					None
-				}
-				_ => unreachable!(),
-			})
+			.filter_map(
+				|(_point, containing_geoids)| match containing_geoids.len() {
+					2.. => Some(
+						containing_geoids
+							.iter()
+							.permutations(2)
+							.map(|permutation| (permutation[0], permutation[1]))
+							.collect::<HashSet<(&GeoId, &GeoId)>>(),
+					),
+					1 => None,
+					0 => {
+						tracing::warn!("Point has no containing GeoIds");
+						None
+					}
+					_ => unreachable!(),
+				},
+			)
 			.fold(
 				BTreeMap::new,
 				|mut map, pairs: HashSet<(&GeoId, &GeoId)>| {
