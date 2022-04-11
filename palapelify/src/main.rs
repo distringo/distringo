@@ -183,6 +183,31 @@ impl GeometryInterner {
 		self.points_to_geoids.iter()
 	}
 
+	fn load_geojson(&mut self, geojson: GeoJson) {
+		use core::convert::TryFrom;
+
+		let geometries = match geojson {
+			GeoJson::FeatureCollection(fc) => fc.features.into_iter().filter_map(|feature| {
+				let geoid = feature_id(&feature)
+					.map(ToString::to_string)
+					.map(GeoId::from);
+
+				let geometry: Option<geo_types::Geometry<f64>> =
+					feature.geometry.map(TryFrom::try_from).and_then(Result::ok);
+
+				match (geoid, geometry) {
+					(Some(geoid), Some(geometry)) => Some((geoid, geometry)),
+					_ => todo!(),
+				}
+			}),
+			_ => todo!(),
+		};
+
+		for (geoid, geometry) in geometries {
+			self.insert(geoid, &geometry);
+		}
+	}
+
 	#[tracing::instrument(skip(self))]
 	fn compute_adjacencies(&self) -> BTreeMap<&GeoId, BTreeSet<&GeoId>> {
 		tracing::info!(
@@ -542,31 +567,6 @@ fn write_adjacency_map(file: &mut File, adjacency_map: BTreeMap<&GeoId, BTreeSet
 	}
 }
 
-fn load_geojson(geojson: GeoJson, interner: &mut GeometryInterner) {
-	use core::convert::TryFrom;
-
-	let geometries = match geojson {
-		GeoJson::FeatureCollection(fc) => fc.features.into_iter().filter_map(|feature| {
-			let geoid = feature_id(&feature)
-				.map(ToString::to_string)
-				.map(GeoId::from);
-
-			let geometry: Option<geo_types::Geometry<f64>> =
-				feature.geometry.map(TryFrom::try_from).and_then(Result::ok);
-
-			match (geoid, geometry) {
-				(Some(geoid), Some(geometry)) => Some((geoid, geometry)),
-				_ => todo!(),
-			}
-		}),
-		_ => todo!(),
-	};
-
-	for (geoid, geometry) in geometries {
-		interner.insert(geoid, &geometry);
-	}
-}
-
 #[tracing::instrument(skip(input_file))]
 fn process_input_file(input_file: &mut File) -> GeometryInterner {
 	let input_data: String = {
@@ -589,9 +589,7 @@ fn process_input_file(input_file: &mut File) -> GeometryInterner {
 	tracing::debug!(?input_file, "Parsed to GeoJson");
 
 	let mut interner: GeometryInterner = GeometryInterner::new();
-
-	load_geojson(data, &mut interner);
-
+	interner.load_geojson(data);
 	interner
 }
 
