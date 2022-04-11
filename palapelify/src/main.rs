@@ -156,7 +156,7 @@ impl GeometryInterner {
 		self.geometry_points.get(geoid)
 	}
 
-	fn insert(&mut self, geoid: GeoId, geometry: geo::Geometry<f64>) {
+	fn insert(&mut self, geoid: GeoId, geometry: &geo::Geometry<f64>) {
 		let points: HashSet<GeometryPoint> = geometry.coords_iter().map(GeometryPoint::from).collect();
 
 		for point in points.iter() {
@@ -563,7 +563,7 @@ fn load_geojson(geojson: GeoJson, interner: &mut GeometryInterner) {
 	};
 
 	for (geoid, geometry) in geometries {
-		interner.insert(geoid, geometry)
+		interner.insert(geoid, &geometry);
 	}
 }
 
