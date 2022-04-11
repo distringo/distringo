@@ -33,7 +33,7 @@ thiserror = "1.0.30"
 tokio = { version = "1.16.1", features = ["macros", "rt-multi-thread"] }
 tokio-stream = { version = "0.1.8", default_features = false }
 tracing = "0.1.32"
-tracing-subscriber = { version = "0.3.9", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.11", features = ["env-filter"] }
 pretty_env_logger = "0.4.0"
 
 # Web server dependencies
