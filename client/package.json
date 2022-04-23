@@ -20,7 +20,7 @@
   "homepage": "https://github.com/rye/distringo#readme",
   "dependencies": {
     "idb": "^7.0.1",
-    "leaflet": "^1.7.1",
+    "leaflet": "^1.8.0",
     "@types/leaflet": "^1.7.8",
     "@types/geojson": "^7946.0.8"
   },
