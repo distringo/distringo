@@ -1,6 +1,6 @@
 // #![cfg_attr(debug_assertions, allow(dead_code))]
 
-use palapelify::GeoScalar;
+use palapelify::{GeoId, GeoScalar};
 
 use std::{
 	collections::{BTreeMap, BTreeSet, HashMap, HashSet},
@@ -15,63 +15,19 @@ use rayon::prelude::*;
 
 use geojson::{Feature, GeoJson};
 
-#[derive(Clone, Debug, Hash, Eq, PartialEq, PartialOrd, Ord)]
-struct GeoId(String);
-
-impl From<String> for GeoId {
-	fn from(string: String) -> Self {
-		Self(string)
-	}
-}
-
-impl core::fmt::Display for GeoId {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "{}", self.0)
-	}
-}
-
-#[cfg(test)]
-mod geoid {
-	use super::GeoId;
-	#[test]
-	fn clone() {
-		let string: String = "I am a string!".to_string();
-		assert!(core::ptr::eq(&string, &string));
-
-		let geoid: GeoId = GeoId(string.clone());
-		assert!(!core::ptr::eq(&string, &geoid.0));
-
-		let clone = geoid.clone();
-		assert!(!core::ptr::eq(&geoid, &clone));
-
-		assert!(!core::ptr::eq(&geoid.0, &clone.0));
-
-		assert_eq!(&geoid.0, &string);
-		assert_eq!(&clone.0, &string);
-	}
-
-	#[test]
-	fn from_string() {
-		let string: String = "I am a string!".to_string();
-
-		let geoid: GeoId = string.clone().into();
-		assert_eq!(geoid.0, string);
-	}
-}
-
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct GeometryPoint([GeoScalar; 2]);
-
-#[derive(Default)]
-struct GeometryInterner {
-	inner: HashMap<GeoId, HashSet<GeometryPoint>>,
-	points_to_geoids: HashMap<GeometryPoint, HashSet<GeoId>>,
-}
 
 impl From<geo::Coordinate<f64>> for GeometryPoint {
 	fn from(coordinate: geo::Coordinate<f64>) -> Self {
 		GeometryPoint([coordinate.y.into(), coordinate.x.into()])
 	}
+}
+
+#[derive(Default)]
+struct GeometryInterner {
+	inner: HashMap<GeoId, HashSet<GeometryPoint>>,
+	points_to_geoids: HashMap<GeometryPoint, HashSet<GeoId>>,
 }
 
 impl GeometryInterner {
@@ -93,7 +49,7 @@ impl GeometryInterner {
 				.points_to_geoids
 				.entry(point)
 				.or_insert_with(HashSet::new)
-				.insert(GeoId(geoid.0.clone()));
+				.insert(geoid.clone());
 		}
 
 		self.inner.insert(geoid, points);
