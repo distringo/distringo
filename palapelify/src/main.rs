@@ -40,7 +40,7 @@ fn process_input_file(input_file: &mut File) -> GeometryInterner {
 		.parse::<GeoJson>()
 		.expect("failed to parse input as geojson");
 
-	tracing::debug!(?input_file, "Parsed to GeoJson");
+	tracing::debug!("Parsed input file to GeoJson");
 
 	let mut interner: GeometryInterner = GeometryInterner::new();
 
