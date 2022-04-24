@@ -100,3 +100,12 @@ mod geoid {
 		assert_eq!(geoid.0, string);
 	}
 }
+
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct GeometryPoint([GeoScalar; 2]);
+
+impl From<geo::Coordinate<f64>> for GeometryPoint {
+	fn from(coordinate: geo::Coordinate<f64>) -> Self {
+		GeometryPoint([coordinate.y.into(), coordinate.x.into()])
+	}
+}

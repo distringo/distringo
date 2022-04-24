@@ -1,6 +1,6 @@
 // #![cfg_attr(debug_assertions, allow(dead_code))]
 
-use palapelify::{GeoId, GeoScalar};
+use palapelify::{GeoId, GeoScalar, GeometryPoint};
 
 use std::{
 	collections::{BTreeMap, BTreeSet, HashMap, HashSet},
@@ -14,15 +14,6 @@ use itertools::Itertools;
 use rayon::prelude::*;
 
 use geojson::{Feature, GeoJson};
-
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-struct GeometryPoint([GeoScalar; 2]);
-
-impl From<geo::Coordinate<f64>> for GeometryPoint {
-	fn from(coordinate: geo::Coordinate<f64>) -> Self {
-		GeometryPoint([coordinate.y.into(), coordinate.x.into()])
-	}
-}
 
 #[derive(Default)]
 struct GeometryInterner {
