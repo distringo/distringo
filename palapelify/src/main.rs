@@ -1,6 +1,6 @@
 // #![cfg_attr(debug_assertions, allow(dead_code))]
 
-use palapelify::{feature_id, GeoId, GeometryInterner, GeometryPoint};
+use palapelify::{GeoId, GeometryInterner};
 
 use std::{
 	collections::{BTreeMap, BTreeSet},
