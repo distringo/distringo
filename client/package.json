@@ -20,7 +20,7 @@
   "homepage": "https://github.com/rye/distringo#readme",
   "dependencies": {
     "idb": "^7.0.1",
-    "leaflet": "^1.7.1",
+    "leaflet": "^1.8.0",
     "@types/leaflet": "^1.7.8",
     "@types/geojson": "^7946.0.8"
   },
@@ -33,7 +33,7 @@
     "sass": "^1.50.0",
     "sass-loader": "^12.6.0",
     "ts-loader": "^9.2.8",
-    "typescript": "^4.6.2",
+    "typescript": "^4.6.3",
     "webpack": "^5.72.0",
     "webpack-cli": "^4.9.1"
   }

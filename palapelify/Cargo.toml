@@ -6,13 +6,13 @@ authors = ["Kristofer Rye <kristofer.rye@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-clap = "3.1.8"
-geo = "0.19.0"
+clap = "3.1.12"
+geo = "0.20.1"
 geojson = { version = "0.22.3", features = ["geo-types"] }
-geo-types = "0.7.0"
+geo-types = "0.7.4"
 itertools = "0.10.3"
 num-traits = "0.2.14"
-rayon = "1.5.1"
+rayon = "1.5.2"
 serde_json = "1.0.78"
-tracing = "0.1.32"
-tracing-subscriber = "0.3.9"
+tracing = "0.1.34"
+tracing-subscriber = "0.3.11"
