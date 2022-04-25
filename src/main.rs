@@ -2,17 +2,15 @@ pub mod server;
 
 /// Get the settings from defaults, the environment, and the config file.
 fn get_settings() -> core::result::Result<config::Config, config::ConfigError> {
-	use config::{Config, Environment, File};
+	use config::{builder::DefaultState, Config, ConfigBuilder, Environment, File};
 
-	let mut settings = Config::default();
-
-	settings.set_default("version", env!("CARGO_PKG_VERSION"))?;
-	settings.set_default("server.host", "::")?;
-	settings.set_default("server.port", 2020)?;
-
-	settings.merge(Environment::with_prefix("DISTRINGO"))?;
-
-	settings.merge(File::with_name("config"))?;
+	let settings: Config = ConfigBuilder::<DefaultState>::default()
+		.set_default("version", env!("CARGO_PKG_VERSION"))?
+		.set_default("server.host", "::")?
+		.set_default("server.port", 2020_u16)?
+		.add_source(Environment::with_prefix("DISTRINGO"))
+		.add_source(File::with_name("config"))
+		.build()?;
 
 	// TODO(rye): Partial loading of subkeys from associated files.
 	//
