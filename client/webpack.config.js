@@ -3,7 +3,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 const path = require('path');
 
 module.exports = {
-	entry: './index.ts',
+	entry: './index.tsx',
 	mode: 'development',
 	output: {
 		path: path.resolve(__dirname, '../dist'),
@@ -18,6 +18,12 @@ module.exports = {
 	},
 	resolve: {
 		extensions: ['.tsx', '.ts', '.js'],
+		alias: {
+			"react": "preact/compat",
+			"react-dom/test-utils": "preact/test-utils",
+			"react-dom": "preact/compat",     // Must be below test-utils
+			"react/jsx-runtime": "preact/jsx-runtime"
+		},
 	},
 	plugins: [
 		new HtmlWebpackPlugin({
