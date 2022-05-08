@@ -13,32 +13,27 @@ impl core::fmt::Display for GeoId {
 	}
 }
 
-#[cfg(test)]
-mod geoid {
-	use super::GeoId;
+#[test]
+fn clone() {
+	let string: String = "I am a string!".to_string();
+	assert!(core::ptr::eq(&string, &string));
 
-	#[test]
-	fn clone() {
-		let string: String = "I am a string!".to_string();
-		assert!(core::ptr::eq(&string, &string));
+	let geoid: GeoId = GeoId(string.clone());
+	assert!(!core::ptr::eq(&string, &geoid.0));
 
-		let geoid: GeoId = GeoId(string.clone());
-		assert!(!core::ptr::eq(&string, &geoid.0));
+	let clone = geoid.clone();
+	assert!(!core::ptr::eq(&geoid, &clone));
 
-		let clone = geoid.clone();
-		assert!(!core::ptr::eq(&geoid, &clone));
+	assert!(!core::ptr::eq(&geoid.0, &clone.0));
 
-		assert!(!core::ptr::eq(&geoid.0, &clone.0));
+	assert_eq!(&geoid.0, &string);
+	assert_eq!(&clone.0, &string);
+}
 
-		assert_eq!(&geoid.0, &string);
-		assert_eq!(&clone.0, &string);
-	}
+#[test]
+fn from_string() {
+	let string: String = "I am a string!".to_string();
 
-	#[test]
-	fn from_string() {
-		let string: String = "I am a string!".to_string();
-
-		let geoid: GeoId = string.clone().into();
-		assert_eq!(geoid.0, string);
-	}
+	let geoid: GeoId = string.clone().into();
+	assert_eq!(geoid.0, string);
 }
