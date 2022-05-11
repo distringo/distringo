@@ -115,6 +115,42 @@ mod interner {
 			assert_eq!(interner.len(), 0_usize);
 		}
 	}
+
+	#[cfg(test)]
+	mod resolve {
+		use super::{GeoIdInterner, InternedGeoId};
+
+		#[test]
+		fn single_correct() {
+			let geoid = "181570111003007";
+			let mut interner = GeoIdInterner::default();
+			let id: InternedGeoId = interner.intern(geoid);
+			assert_eq!(interner.resolve(id), Some(geoid));
+		}
+
+		#[test]
+		fn insert_twice_correct() {
+			let geoid = "181570111003007";
+			let mut interner = GeoIdInterner::default();
+			let id_first: InternedGeoId = interner.intern(geoid);
+			let id_second: InternedGeoId = interner.intern(geoid);
+			assert_eq!(interner.resolve(id_first), Some(geoid));
+			assert_eq!(interner.resolve(id_second), Some(geoid));
+		}
+
+		#[test]
+		fn insert_twice_then_once_correct() {
+			let geoid_first = "181570111003007";
+			let geoid_second = "181570111003006";
+			let mut interner = GeoIdInterner::default();
+			let id_first_first: InternedGeoId = interner.intern(geoid_first);
+			let id_first_second: InternedGeoId = interner.intern(geoid_first);
+			let id_second: InternedGeoId = interner.intern(geoid_second);
+			assert_eq!(interner.resolve(id_first_first), Some(geoid_first));
+			assert_eq!(interner.resolve(id_first_second), Some(geoid_first));
+			assert_eq!(interner.resolve(id_second), Some(geoid_second));
+		}
+	}
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
