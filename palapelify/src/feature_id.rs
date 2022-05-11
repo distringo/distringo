@@ -206,11 +206,7 @@ mod tests {
 	}
 
 	fn blank_feature() -> Feature {
-		let bbox = None;
-		let properties = None;
-		let geometry = None;
-		let id = None;
-		let foreign_members = None;
+		let (bbox, properties, geometry, id, foreign_members) = (None, None, None, None, None);
 
 		Feature {
 			bbox,
