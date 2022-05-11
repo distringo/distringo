@@ -1,6 +1,6 @@
 // #![cfg_attr(debug_assertions, allow(dead_code))]
 
-use palapelify::{GeoId, GeometryInterner};
+use palapelify::GeometryInterner;
 
 use std::{
 	collections::{BTreeMap, BTreeSet},
@@ -11,7 +11,7 @@ use std::{
 use geojson::GeoJson;
 
 #[tracing::instrument(skip(adjacency_map))]
-fn write_adjacency_map(file: &mut File, adjacency_map: BTreeMap<&GeoId, BTreeSet<&GeoId>>) {
+fn write_adjacency_map(file: &mut File, adjacency_map: BTreeMap<&str, BTreeSet<&str>>) {
 	tracing::debug!(?file, "Writing adjacency map");
 
 	for (lhs, neighbors) in adjacency_map {
@@ -64,9 +64,11 @@ fn main() {
 		.open(input_file)
 		.expect("failed to open input file for reading");
 
-	tracing::debug!(?input_file, "Opened input file");
+	tracing::info!(?input_file, "Processing input file");
 
 	let interner = process_input_file(&mut input_file);
+
+	tracing::info!(?input_file, "Computing adjacencies");
 
 	let adjacency_map = interner.compute_adjacencies();
 
