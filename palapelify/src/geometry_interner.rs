@@ -32,7 +32,7 @@ impl GeometryInterner {
 				.points_to_geoids
 				.entry(point)
 				.or_insert_with(std::collections::HashSet::new)
-				.insert(geoid.clone());
+				.insert(geoid);
 		}
 
 		self.inner.insert(geoid, points);
