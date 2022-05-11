@@ -2,11 +2,12 @@ use crate::feature_id;
 use crate::geoid::{GeoIdInterner, InternedGeoId};
 use crate::point::GeometryPoint;
 
+use std::collections::{HashMap, HashSet};
+
 #[derive(Default)]
 pub struct GeometryInterner {
 	geoid_interner: GeoIdInterner,
-	point_containers:
-		std::collections::HashMap<GeometryPoint, std::collections::HashSet<InternedGeoId>>,
+	point_containers: HashMap<GeometryPoint, HashSet<InternedGeoId>>,
 }
 
 impl GeometryInterner {
@@ -18,22 +19,19 @@ impl GeometryInterner {
 	fn insert(&mut self, geoid: InternedGeoId, geometry: geo::Geometry<f64>) {
 		use geo::coords_iter::CoordsIter;
 
-		let points: std::collections::HashSet<GeometryPoint> =
-			geometry.coords_iter().map(GeometryPoint::from).collect();
+		let points: HashSet<GeometryPoint> = geometry.coords_iter().map(GeometryPoint::from).collect();
 
 		for point in points.iter() {
 			let point: GeometryPoint = point.clone();
 			self
 				.point_containers
 				.entry(point)
-				.or_insert_with(std::collections::HashSet::new)
+				.or_insert_with(HashSet::new)
 				.insert(geoid);
 		}
 	}
 
-	fn points(
-		&self,
-	) -> impl Iterator<Item = (&GeometryPoint, &std::collections::HashSet<InternedGeoId>)> {
+	fn points(&self) -> impl Iterator<Item = (&GeometryPoint, &HashSet<InternedGeoId>)> {
 		self.point_containers.iter()
 	}
 
@@ -89,7 +87,7 @@ impl GeometryInterner {
 						.iter()
 						.permutations(2)
 						.map(|permutation| (permutation[0], permutation[1]))
-						.collect::<std::collections::HashSet<(&InternedGeoId, &InternedGeoId)>>(),
+						.collect::<HashSet<(&InternedGeoId, &InternedGeoId)>>(),
 				),
 				1 => None,
 				0 => {
@@ -100,7 +98,7 @@ impl GeometryInterner {
 			})
 			.fold(
 				std::collections::BTreeMap::new,
-				|mut map, pairs: std::collections::HashSet<(&InternedGeoId, &InternedGeoId)>| {
+				|mut map, pairs: HashSet<(&InternedGeoId, &InternedGeoId)>| {
 					tracing::trace!("Folding in {} entries", pairs.len());
 
 					for pair in pairs {
