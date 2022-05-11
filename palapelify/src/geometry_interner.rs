@@ -1,5 +1,5 @@
 use crate::feature_id;
-use crate::interned_id::{GeoIdInterner, InternedGeoId};
+use crate::geoid::{GeoIdInterner, InternedGeoId};
 use crate::point::GeometryPoint;
 
 #[derive(Default)]
