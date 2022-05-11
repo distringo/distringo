@@ -13,13 +13,13 @@ mod known {
 
 	const REAL_GEOID: &str = "A valid geoid!";
 
-	fn properties(key: &str) -> Option<serde_json::Map<String, serde_json::Value>> {
+	fn properties(key: &str) -> serde_json::Map<String, serde_json::Value> {
 		let mut map = serde_json::Map::new();
 		map.insert(
 			key.to_string(),
 			serde_json::Value::String(REAL_GEOID.to_string()),
 		);
-		Some(map)
+		map
 	}
 
 	fn blank_feature() -> Feature {
@@ -40,7 +40,7 @@ mod known {
 
 	#[test]
 	fn geoid10() {
-		let properties = properties("GEOID10");
+		let properties = Some(properties("GEOID10"));
 		let feature = Feature {
 			properties,
 			..blank_feature()
@@ -51,7 +51,7 @@ mod known {
 
 	#[test]
 	fn geoid20() {
-		let properties = properties("GEOID20");
+		let properties = Some(properties("GEOID20"));
 		let feature = Feature {
 			properties,
 			..blank_feature()
