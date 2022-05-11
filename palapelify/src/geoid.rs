@@ -16,12 +16,7 @@ impl GeoIdInterner {
 	pub fn len(&self) -> usize {
 		self.inner.len()
 	}
-}
 
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct InternedGeoId(SymbolU32);
-
-impl GeoIdInterner {
 	pub fn intern(&mut self, string: &str) -> InternedGeoId {
 		InternedGeoId(self.inner.get_or_intern(string))
 	}
@@ -30,3 +25,6 @@ impl GeoIdInterner {
 		self.inner.resolve(interned.0)
 	}
 }
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct InternedGeoId(SymbolU32);
