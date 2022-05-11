@@ -12,6 +12,12 @@ impl Default for GeoIdInterner {
 	}
 }
 
+impl GeoIdInterner {
+	pub fn len(&self) -> usize {
+		self.inner.len()
+	}
+}
+
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct InternedGeoId(SymbolU32);
 

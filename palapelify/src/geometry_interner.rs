@@ -5,8 +5,7 @@ use crate::point::GeometryPoint;
 #[derive(Default)]
 pub struct GeometryInterner {
 	geoid_interner: GeoIdInterner,
-	inner: std::collections::HashMap<InternedGeoId, std::collections::HashSet<GeometryPoint>>,
-	points_to_geoids:
+	point_containers:
 		std::collections::HashMap<GeometryPoint, std::collections::HashSet<InternedGeoId>>,
 }
 
@@ -14,10 +13,6 @@ impl GeometryInterner {
 	#[must_use]
 	pub fn new() -> Self {
 		Self::default()
-	}
-
-	fn get(&self, geoid: &InternedGeoId) -> Option<&std::collections::HashSet<GeometryPoint>> {
-		self.inner.get(geoid)
 	}
 
 	fn insert(&mut self, geoid: InternedGeoId, geometry: geo::Geometry<f64>) {
@@ -29,30 +24,17 @@ impl GeometryInterner {
 		for point in points.iter() {
 			let point: GeometryPoint = point.clone();
 			self
-				.points_to_geoids
+				.point_containers
 				.entry(point)
 				.or_insert_with(std::collections::HashSet::new)
 				.insert(geoid);
 		}
-
-		self.inner.insert(geoid, points);
-	}
-
-	fn geoids(&self) -> impl Iterator<Item = &InternedGeoId> + Clone + Send {
-		self.inner.keys()
-	}
-
-	fn entries(
-		&self,
-	) -> impl Iterator<Item = (&InternedGeoId, &std::collections::HashSet<GeometryPoint>)> + Clone + Send
-	{
-		self.inner.iter()
 	}
 
 	fn points(
 		&self,
 	) -> impl Iterator<Item = (&GeometryPoint, &std::collections::HashSet<InternedGeoId>)> {
-		self.points_to_geoids.iter()
+		self.point_containers.iter()
 	}
 
 	fn process_feature(
@@ -91,8 +73,8 @@ impl GeometryInterner {
 	) -> std::collections::BTreeMap<&str, std::collections::BTreeSet<&str>> {
 		tracing::info!(
 			"Computing adjacencies on {} geoids ({} unique points)",
-			self.inner.len(),
-			self.points_to_geoids.len()
+			self.geoid_interner.len(),
+			self.point_containers.len()
 		);
 
 		use itertools::Itertools;

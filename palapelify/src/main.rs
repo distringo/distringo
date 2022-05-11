@@ -64,9 +64,11 @@ fn main() {
 		.open(input_file)
 		.expect("failed to open input file for reading");
 
-	tracing::debug!(?input_file, "Opened input file");
+	tracing::info!(?input_file, "Processing input file");
 
 	let interner = process_input_file(&mut input_file);
+
+	tracing::info!(?input_file, "Computing adjacencies");
 
 	let adjacency_map = interner.compute_adjacencies();
 
