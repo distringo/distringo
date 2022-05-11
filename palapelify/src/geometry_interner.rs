@@ -126,14 +126,14 @@ impl GeometryInterner {
 			.flat_map(std::collections::BTreeMap::into_iter)
 			.fold(
 				std::collections::BTreeMap::new(),
-				|mut final_map, (id, neighbors)| {
+				|mut final_map, (&id, neighbors)| {
 					let id = self
 						.resolve_geoid(id)
 						.expect("attempted to resolve id at final step but id was not interned");
 
 					let neighbors = neighbors
 						.iter()
-						.filter_map(|neighbor_id| self.resolve_geoid(neighbor_id));
+						.filter_map(|&&neighbor_id| self.resolve_geoid(neighbor_id));
 
 					final_map
 						.entry(id)
@@ -144,7 +144,7 @@ impl GeometryInterner {
 			)
 	}
 
-	fn resolve_geoid(&self, geoid: &InternedGeoId) -> Option<&str> {
+	fn resolve_geoid(&self, geoid: InternedGeoId) -> Option<&str> {
 		self.geoid_interner.resolve(geoid)
 	}
 }

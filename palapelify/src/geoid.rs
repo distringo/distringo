@@ -26,7 +26,7 @@ impl GeoIdInterner {
 		InternedGeoId(self.inner.get_or_intern(string))
 	}
 
-	pub fn resolve(&self, interned: &InternedGeoId) -> Option<&str> {
+	pub fn resolve(&self, interned: InternedGeoId) -> Option<&str> {
 		self.inner.resolve(interned.0)
 	}
 }
