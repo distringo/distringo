@@ -5,6 +5,13 @@ div.leaflet-control.distringo-controls {
 	background-color: #404040;
 }
 
+body {
+	margin: 0;
+	overflow-y: hidden;
+	height: 100vh;
+	font-family: 'B612', sans-serif;
+}
+
 div.distringo-controls.collapsed {
 	background-color: #ff0000;
 }
@@ -15,4 +22,33 @@ div.selecting .leaflet-interactive {
 
 .leaflet-container {
 	font-family: 'B612', sans-serif;
+}
+
+.distringo-map-container {
+	flex: 1 1;
+	width: 100vw;
+	height: 100vh;
+}
+
+div.session-picker {
+	display: flex;
+	width: 25vw;
+	height: 25vh;
+	/* margin: auto; */
+	justify-content: center;
+	align-items: center;
+	/* align-content: center; */
+	flex-direction: column;
+
+	border: 1px solid #404040;
+	padding: 16px;
+	border-radius: 16px;
+}
+
+main.content {
+	display: flex;
+	height: 100%;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
 }
