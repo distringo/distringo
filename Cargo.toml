@@ -23,7 +23,7 @@ csv = "1.1.6"
 geo = "0.20.1"
 geojson = "0.22.3"
 regex = "1.5.5"
-semver = "1.0.7"
+semver = "1.0.9"
 
 # Runtime
 config = { version = "0.13.1", default_features = false, features = ["json", "yaml"] }
