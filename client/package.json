@@ -27,7 +27,7 @@
     "@types/geojson": "^7946.0.8"
   },
   "devDependencies": {
-    "copy-webpack-plugin": "^10.2.1",
+    "copy-webpack-plugin": "^11.0.0",
     "html-webpack-plugin": "^5.5.0",
     "jest": "^28.1.0",
     "prettier": "^2.6.2",
