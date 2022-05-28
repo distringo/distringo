@@ -65,7 +65,7 @@ jobs:
         env:
           LLVM_PROFILE_FILE: "distringo-%p-%m.profraw"
           RUSTFLAGS: >
-            -Zinstrument-coverage
+            -Cinstrument-coverage
       - name: Run grcov
         run: >
           grcov .
