@@ -59,20 +59,27 @@ jobs:
       - name: Install grcov
         run: cargo install grcov
       - uses: actions/checkout@v1
+      - name: Run cargo build (to generate test targets)
+        run: |
+          cargo build --workspace --all-features --all-targets
+        env:
+          RUSTFLAGS: >
+            -Cinstrument-coverage
       - name: Run tests with profiling
         run: |
-          cargo test --workspace --all-features --no-fail-fast
+          cargo test --workspace --all-features --all-targets --no-fail-fast
         env:
           LLVM_PROFILE_FILE: "distringo-%p-%m.profraw"
           RUSTFLAGS: >
-            -Zinstrument-coverage
+            -Cinstrument-coverage
       - name: Run grcov
         run: >
-          grcov .
+          grcov . palapelify/.
           -s .
           --binary-path ./target/debug/
           -t lcov
           --llvm
+          --log-level TRACE
           --branch
           --ignore-not-existing
           -o ./lcov.info
