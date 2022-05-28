@@ -59,6 +59,12 @@ jobs:
       - name: Install grcov
         run: cargo install grcov
       - uses: actions/checkout@v1
+      - name: Run cargo build (to generate test targets)
+        run: |
+          cargo build --workspace --all-features --all-targets --no-fail-fast
+        env:
+          RUSTFLAGS: >
+            -Cinstrument-coverage
       - name: Run tests with profiling
         run: |
           cargo test --workspace --all-features --all-targets --no-fail-fast
