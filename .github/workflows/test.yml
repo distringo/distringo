@@ -61,7 +61,7 @@ jobs:
       - uses: actions/checkout@v1
       - name: Run tests with profiling
         run: |
-          cargo test --workspace --all-features --no-fail-fast
+          cargo test --workspace --all-features --all-targets --no-fail-fast
         env:
           LLVM_PROFILE_FILE: "distringo-%p-%m.profraw"
           RUSTFLAGS: >
