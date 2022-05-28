@@ -79,6 +79,7 @@ jobs:
           --binary-path ./target/debug/
           -t lcov
           --llvm
+          --log-level TRACE
           --branch
           --ignore-not-existing
           -o ./lcov.info
