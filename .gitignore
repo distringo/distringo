@@ -8,7 +8,7 @@
 /data/*
 !/data/.keep
 
-# Ignore cargo configuration
+# Ignore local cargo configuration
 /.cargo/
 
 # Data that we've generated and acquired from places
