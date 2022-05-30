@@ -11,6 +11,11 @@
 # Ignore local cargo configuration
 /.cargo/
 
+# Ignore coverage data
+*.profraw
+*.profdata
+lcov.info
+
 # Data that we've generated and acquired from places
 *.geojson
 *.pl
