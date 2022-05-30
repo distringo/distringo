@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        rust: [nightly]
+        rust: [stable]
     steps:
       - name: Install the appropriate Rust toolchain
         run: |
