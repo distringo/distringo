@@ -114,3 +114,25 @@ impl ExecutionPlan {
 		Ok(())
 	}
 }
+
+#[cfg(test)]
+mod execution_plan {
+	use super::ExecutionPlan;
+
+	#[cfg(test)]
+	mod validate_version {
+		use super::ExecutionPlan;
+
+		#[test]
+		fn valid_version() {
+			let config_version = "0.0.0";
+			assert!(ExecutionPlan::validate_version(config_version).is_ok());
+		}
+
+		#[test]
+		fn non_version_err() {
+			let config_version = "not a version";
+			assert!(ExecutionPlan::validate_version(config_version).is_err());
+		}
+	}
+}
