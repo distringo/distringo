@@ -311,6 +311,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "distringo-server"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "config",
+ "csv",
+ "fnv",
+ "futures",
+ "geo",
+ "geojson",
+ "http",
+ "hyper",
+ "lazy_static",
+ "log",
+ "once_cell",
+ "pretty_env_logger",
+ "regex",
+ "semver",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "simple_logger",
+ "thiserror",
+ "tokio",
+ "tokio-stream",
+ "tower",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "either"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
