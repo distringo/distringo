@@ -38,7 +38,7 @@ pretty_env_logger = "0.4.0"
 
 # Web server dependencies
 axum = "0.5.7"
-http = "0.2.7"
+http = "0.2.8"
 hyper = "0.14.19"
 tower = { version = "0.4.11", features = ["util", "timeout"] }
 tower-http = { version = "0.3.3", features = ["add-extension", "fs", "trace"] }
