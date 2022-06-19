@@ -11,3 +11,6 @@ pub use crate::config::*;
 // use geoid## => geographical header (geoid## in GEOCODE column) -> LOGRECNO => [for all files: offset for LOGRECNO]
 //   (in debug mode, verify LOGRECNO match)
 //   ()
+
+mod id;
+pub use crate::id::*;
