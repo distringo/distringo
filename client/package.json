@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/rye/distringo#readme",
   "dependencies": {
-    "idb": "^7.0.1",
+    "idb": "^7.0.2",
     "leaflet": "^1.8.0",
     "preact": "^10.8.0",
     "react-leaflet": "4.0.0",
