@@ -37,7 +37,7 @@ tracing-subscriber = { version = "0.3.11", features = ["env-filter"] }
 pretty_env_logger = "0.4.0"
 
 # Web server dependencies
-axum = "0.5.9"
+axum = "0.5.11"
 http = "0.2.7"
 hyper = "0.14.19"
 tower = { version = "0.4.13", features = ["util", "timeout"] }
