@@ -31,3 +31,24 @@ impl GeoId {
 struct GeoIdInterner {}
 
 impl GeoIdInterner {}
+
+#[cfg(test)]
+mod test {
+	use super::GeoId;
+
+	#[test]
+	fn is_interned() {
+		let geoid = GeoId::Interned(0_u32);
+		assert_eq!(geoid.is_interned(), true);
+		let geoid = GeoId::Raw("".into());
+		assert_eq!(geoid.is_interned(), false);
+	}
+
+	#[test]
+	fn is_raw() {
+		let geoid = GeoId::Interned(0_u32);
+		assert_eq!(geoid.is_raw(), false);
+		let geoid = GeoId::Raw("".into());
+		assert_eq!(geoid.is_raw(), true);
+	}
+}
