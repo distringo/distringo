@@ -39,16 +39,16 @@ mod test {
 	#[test]
 	fn is_interned() {
 		let geoid = GeoId::Interned(0_u32);
-		assert_eq!(geoid.is_interned(), true);
+		assert!(geoid.is_interned());
 		let geoid = GeoId::Raw("".into());
-		assert_eq!(geoid.is_interned(), false);
+		assert!(!geoid.is_interned());
 	}
 
 	#[test]
 	fn is_raw() {
 		let geoid = GeoId::Interned(0_u32);
-		assert_eq!(geoid.is_raw(), false);
+		assert!(!geoid.is_raw());
 		let geoid = GeoId::Raw("".into());
-		assert_eq!(geoid.is_raw(), true);
+		assert!(geoid.is_raw());
 	}
 }
