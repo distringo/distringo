@@ -6,7 +6,7 @@ authors = ["Kristofer Rye <kristofer.rye@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-clap = "3.2.14"
+clap = "3.2.15"
 geo = "0.22.1"
 geojson = { version = "0.23.0", features = ["geo-types"] }
 geo-types = "0.7.4"
