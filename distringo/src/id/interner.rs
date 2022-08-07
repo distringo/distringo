@@ -143,7 +143,33 @@ fn intern_and_get_multiple() {
 
 #[cfg(test)]
 mod internal {
-	use super::GeoIdInterner;
+	use super::{GeoId, GeoIdInterner};
+
+	#[cfg(test)]
+	mod contains_symbol {
+		use super::{GeoId, GeoIdInterner};
+
+		#[test]
+		fn inserted() {
+			let geoid = GeoId::from(String::from("a string"));
+
+			let mut interner = GeoIdInterner::new();
+			let geoid = interner.intern(geoid);
+
+			match geoid {
+				GeoId::Interned(name) => assert!(interner.contains_symbol(name)),
+				GeoId::Raw(_) => unreachable!(),
+			}
+		}
+
+		#[test]
+		fn uninserted() {
+			let interner = GeoIdInterner::new();
+
+			assert!(!interner.contains_symbol(1657_u32));
+			assert!(!interner.contains_symbol(0_u32));
+		}
+	}
 
 	#[test]
 	fn intern_twice_same_reuses_same_id() {
