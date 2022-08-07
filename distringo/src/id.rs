@@ -58,14 +58,14 @@ impl GeoIdInterner {
 		self.strings.get(name as usize)
 	}
 
-	fn get_bstr(&self, name: u32) -> Option<Box<str>> {
+	fn get_box_str_cloned(&self, name: u32) -> Option<Box<str>> {
 		self.get_entry(name).map(|rc| (*rc.clone()).clone())
 	}
 
 	pub fn get(&self, geoid: GeoId) -> Option<GeoId> {
 		match geoid {
 			GeoId::Raw(ref _str) => Some(geoid),
-			GeoId::Interned(name) => self.get_bstr(name).map(GeoId::Raw),
+			GeoId::Interned(name) => self.get_box_str_cloned(name).map(GeoId::Raw),
 		}
 	}
 }
