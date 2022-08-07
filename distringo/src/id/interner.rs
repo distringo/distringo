@@ -168,7 +168,7 @@ mod contains_symbol {
 }
 
 #[cfg(test)]
-mod internal {
+mod intern_raw {
 	use super::GeoIdInterner;
 
 	#[test]
