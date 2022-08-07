@@ -63,23 +63,23 @@ impl<'i> GeoIdInterner<'i> {
 	}
 
 	fn get_cloned(&self, name: u32) -> Option<Cow<str>> {
-		self.get_entry(name).map(|str| str.clone())
+		self.get_entry(name).cloned()
 	}
 
 	fn get_str_raw(&self, name: u32) -> Option<&str> {
 		self.get_entry(name).map(|str| str.as_ref())
 	}
 
-	fn get_interned_str(&self, geoid: GeoId) -> Option<&str> {
+	fn get_interned_str(&self, geoid: &GeoId) -> Option<&str> {
 		match geoid {
-			GeoId::Interned(name) => self.get_str_raw(name),
+			GeoId::Interned(name) => self.get_str_raw(*name),
 			// TODO: This could be smarter? Isn't a GeoId::Raw(String) -> Some(&str) conversion possible?
 			GeoId::Raw(_) => None,
 		}
 	}
 
 	fn get_string_raw(&self, name: u32) -> Option<String> {
-		self.get_cloned(name).map(|str| String::from(str))
+		self.get_cloned(name).map(String::from)
 	}
 
 	fn get_string(&self, geoid: GeoId) -> Option<String> {
@@ -154,16 +154,16 @@ mod interner {
 		#[test]
 		fn intern_twice_same_reuses_same_id() {
 			let mut interner = GeoIdInterner::new();
-			assert_eq!(interner.intern_raw("a string".into()), 0);
-			assert_eq!(interner.intern_raw("a string".into()), 0);
+			assert_eq!(interner.intern_raw("a string"), 0);
+			assert_eq!(interner.intern_raw("a string"), 0);
 		}
 
 		#[test]
 		fn intern_twice_and_another_generates_separate_ids() {
 			let mut interner = GeoIdInterner::new();
-			assert_eq!(interner.intern_raw("a string".into()), 0);
-			assert_eq!(interner.intern_raw("a string".into()), 0);
-			assert_eq!(interner.intern_raw("another string".into()), 1);
+			assert_eq!(interner.intern_raw("a string"), 0);
+			assert_eq!(interner.intern_raw("a string"), 0);
+			assert_eq!(interner.intern_raw("another string"), 1);
 		}
 	}
 }
