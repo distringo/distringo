@@ -95,73 +95,68 @@ impl<'i> GeoIdInterner<'i> {
 	}
 }
 
+#[test]
+fn intern_and_get() {
+	// Start with a basic string
+	let string = String::from("a string");
+	// Convert that into a geoid
+	let geoid = GeoId::from(string);
+	// It should be raw at this point.
+	assert!(geoid.is_raw());
+
+	let mut interner: GeoIdInterner = GeoIdInterner::new();
+	let interned_geoid = interner.intern(geoid);
+	assert!(interned_geoid.is_interned());
+
+	let raw_geoid = interner.get(interned_geoid);
+	assert!(raw_geoid.is_some());
+	assert!(raw_geoid.unwrap().is_raw());
+}
+
+#[test]
+fn intern_and_get_multiple() {
+	let mut interner = GeoIdInterner::new();
+
+	let geoid_0_0 = interner.intern(GeoId::from(String::from("a string")));
+	let geoid_0_1 = interner.intern(GeoId::from(String::from("a string")));
+	let geoid_1_0 = interner.intern(GeoId::from(String::from("another string")));
+	let geoid_0_2 = interner.intern(GeoId::from(String::from("a string")));
+	let geoid_1_1 = interner.intern(GeoId::from(String::from("another string")));
+
+	assert!(geoid_0_0.is_interned());
+	assert!(geoid_0_1.is_interned());
+	assert!(geoid_0_2.is_interned());
+	assert!(geoid_1_0.is_interned());
+	assert!(geoid_1_1.is_interned());
+
+	match ((geoid_0_0, geoid_0_1, geoid_0_2), (geoid_1_0, geoid_1_1)) {
+		(
+			(GeoId::Interned(name_0_0), GeoId::Interned(name_0_1), GeoId::Interned(name_0_2)),
+			(GeoId::Interned(name_1_0), GeoId::Interned(name_1_1)),
+		) => {
+			assert!(name_0_0 == name_0_1 && name_0_1 == name_0_2);
+			assert!(name_1_0 == name_1_1);
+		}
+		_ => unreachable!(),
+	}
+}
+
 #[cfg(test)]
-mod interner {
-	use super::{GeoId, GeoIdInterner};
+mod internal {
+	use super::GeoIdInterner;
 
 	#[test]
-	fn intern_and_get() {
-		// Start with a basic string
-		let string = String::from("a string");
-		// Convert that into a geoid
-		let geoid = GeoId::from(string);
-		// It should be raw at this point.
-		assert!(geoid.is_raw());
-
-		let mut interner: GeoIdInterner = GeoIdInterner::new();
-		let interned_geoid = interner.intern(geoid);
-		assert!(interned_geoid.is_interned());
-
-		let raw_geoid = interner.get(interned_geoid);
-		assert!(raw_geoid.is_some());
-		assert!(raw_geoid.unwrap().is_raw());
-	}
-
-	#[test]
-	fn intern_and_get_multiple() {
+	fn intern_twice_same_reuses_same_id() {
 		let mut interner = GeoIdInterner::new();
-
-		let geoid_0_0 = interner.intern(GeoId::from(String::from("a string")));
-		let geoid_0_1 = interner.intern(GeoId::from(String::from("a string")));
-		let geoid_1_0 = interner.intern(GeoId::from(String::from("another string")));
-		let geoid_0_2 = interner.intern(GeoId::from(String::from("a string")));
-		let geoid_1_1 = interner.intern(GeoId::from(String::from("another string")));
-
-		assert!(geoid_0_0.is_interned());
-		assert!(geoid_0_1.is_interned());
-		assert!(geoid_0_2.is_interned());
-		assert!(geoid_1_0.is_interned());
-		assert!(geoid_1_1.is_interned());
-
-		match ((geoid_0_0, geoid_0_1, geoid_0_2), (geoid_1_0, geoid_1_1)) {
-			(
-				(GeoId::Interned(name_0_0), GeoId::Interned(name_0_1), GeoId::Interned(name_0_2)),
-				(GeoId::Interned(name_1_0), GeoId::Interned(name_1_1)),
-			) => {
-				assert!(name_0_0 == name_0_1 && name_0_1 == name_0_2);
-				assert!(name_1_0 == name_1_1);
-			}
-			_ => unreachable!(),
-		}
+		assert_eq!(interner.intern_raw("a string"), 0);
+		assert_eq!(interner.intern_raw("a string"), 0);
 	}
 
-	#[cfg(test)]
-	mod internal {
-		use super::GeoIdInterner;
-
-		#[test]
-		fn intern_twice_same_reuses_same_id() {
-			let mut interner = GeoIdInterner::new();
-			assert_eq!(interner.intern_raw("a string"), 0);
-			assert_eq!(interner.intern_raw("a string"), 0);
-		}
-
-		#[test]
-		fn intern_twice_and_another_generates_separate_ids() {
-			let mut interner = GeoIdInterner::new();
-			assert_eq!(interner.intern_raw("a string"), 0);
-			assert_eq!(interner.intern_raw("a string"), 0);
-			assert_eq!(interner.intern_raw("another string"), 1);
-		}
+	#[test]
+	fn intern_twice_and_another_generates_separate_ids() {
+		let mut interner = GeoIdInterner::new();
+		assert_eq!(interner.intern_raw("a string"), 0);
+		assert_eq!(interner.intern_raw("a string"), 0);
+		assert_eq!(interner.intern_raw("another string"), 1);
 	}
 }
