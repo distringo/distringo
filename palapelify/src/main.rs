@@ -68,8 +68,6 @@ fn main() {
 
 	let interner = process_input_file(&mut input_file);
 
-	tracing::info!(?input_file, "Computing adjacencies");
-
 	let adjacency_map = interner.compute_adjacencies();
 
 	let mut output_file: File = OpenOptions::new()

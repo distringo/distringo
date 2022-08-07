@@ -13,6 +13,10 @@ impl<'i> GeoIdInterner<'i> {
 		Self::default()
 	}
 
+	pub fn count(&self) -> usize {
+		self.strings.len()
+	}
+
 	fn contains_symbol(&self, name: u32) -> bool {
 		self.strings.get(name as usize).is_some()
 	}
@@ -48,24 +52,29 @@ impl<'i> GeoIdInterner<'i> {
 		self.intern_raw_string(String::from(string))
 	}
 
-	fn get_entry(&self, name: u32) -> Option<&Cow<str>> {
+	fn get_entry_raw(&self, name: u32) -> Option<&Cow<str>> {
 		self.strings.get(name as usize)
 	}
 
-	fn get_cloned(&self, name: u32) -> Option<Cow<str>> {
-		self.get_entry(name).cloned()
+	pub fn get_entry(&self, interned: Interned) -> Option<&Cow<str>> {
+		self.get_entry_raw(interned.into())
 	}
 
-	fn get_str_raw(&self, name: u32) -> Option<&str> {
-		self.get_entry(name).map(|str| str.as_ref())
+	pub fn get_entry_str(&self, interned: Interned) -> Option<&str> {
+		use core::borrow::Borrow;
+		self.get_entry(interned).map(Borrow::borrow)
 	}
 
-	fn get_string_raw(&self, name: u32) -> Option<String> {
-		self.get_cloned(name).map(String::from)
+	fn resolve_inner(&self, interned: Interned) -> Option<Cow<str>> {
+		self.get_entry(interned).cloned()
+	}
+
+	fn get_string_raw(&self, interned: Interned) -> Option<String> {
+		self.resolve_inner(interned).map(String::from)
 	}
 
 	pub fn resolve(&self, interned: Interned) -> Option<Raw> {
-		self.get_string_raw(interned.into()).map(Into::into)
+		self.get_string_raw(interned).map(Into::into)
 	}
 }
 

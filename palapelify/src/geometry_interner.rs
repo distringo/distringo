@@ -1,22 +1,23 @@
 use crate::feature_id;
-use crate::geoid::{GeoIdInterner, InternedGeoId};
 use crate::point::GeometryPoint;
+
+use distringo::{GeoIdInterner, Interned};
 
 use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
-pub struct GeometryInterner {
-	geoid_interner: GeoIdInterner,
-	point_containers: HashMap<GeometryPoint, HashSet<InternedGeoId>>,
+pub struct GeometryInterner<'a> {
+	geoid_interner: GeoIdInterner<'a>,
+	point_containers: HashMap<GeometryPoint, HashSet<Interned>>,
 }
 
-impl GeometryInterner {
+impl<'a> GeometryInterner<'a> {
 	#[must_use]
 	pub fn new() -> Self {
 		Self::default()
 	}
 
-	fn insert(&mut self, geoid: InternedGeoId, geometry: geo::Geometry<f64>) {
+	fn insert(&mut self, geoid: Interned, geometry: geo::Geometry<f64>) {
 		use geo::coords_iter::CoordsIter;
 
 		let points: HashSet<GeometryPoint> = geometry.coords_iter().map(GeometryPoint::from).collect();
@@ -31,15 +32,17 @@ impl GeometryInterner {
 		}
 	}
 
-	fn points(&self) -> impl Iterator<Item = (&GeometryPoint, &HashSet<InternedGeoId>)> {
+	fn points(&self) -> impl Iterator<Item = (&GeometryPoint, &HashSet<Interned>)> {
 		self.point_containers.iter()
 	}
 
 	fn process_feature(
 		&mut self,
 		feature: geojson::Feature,
-	) -> Option<(InternedGeoId, geo_types::Geometry<f64>)> {
-		let geoid = feature_id(&feature).map(|string| self.geoid_interner.intern(string));
+	) -> Option<(Interned, geo_types::Geometry<f64>)> {
+		let feature_geoid = feature_id(&feature).map(|string| string.to_string().into());
+
+		let geoid = feature_geoid.map(|string| self.geoid_interner.intern(string));
 
 		let geometry: Option<geo_types::Geometry<f64>> = feature
 			.geometry
@@ -71,7 +74,7 @@ impl GeometryInterner {
 	) -> std::collections::BTreeMap<&str, std::collections::BTreeSet<&str>> {
 		tracing::info!(
 			"Computing adjacencies on {} geoids ({} unique points)",
-			self.geoid_interner.len(),
+			self.geoid_interner.count(),
 			self.point_containers.len()
 		);
 
@@ -87,7 +90,7 @@ impl GeometryInterner {
 						.iter()
 						.permutations(2)
 						.map(|permutation| (permutation[0], permutation[1]))
-						.collect::<HashSet<(&InternedGeoId, &InternedGeoId)>>(),
+						.collect::<HashSet<(&Interned, &Interned)>>(),
 				),
 				1 => None,
 				0 => {
@@ -98,7 +101,7 @@ impl GeometryInterner {
 			})
 			.fold(
 				std::collections::BTreeMap::new,
-				|mut map, pairs: HashSet<(&InternedGeoId, &InternedGeoId)>| {
+				|mut map, pairs: HashSet<(&Interned, &Interned)>| {
 					tracing::trace!("Folding in {} entries", pairs.len());
 
 					for pair in pairs {
@@ -142,7 +145,7 @@ impl GeometryInterner {
 			)
 	}
 
-	fn resolve_geoid(&self, geoid: InternedGeoId) -> Option<&str> {
-		self.geoid_interner.resolve(geoid)
+	fn resolve_geoid(&self, geoid: Interned) -> Option<&str> {
+		self.geoid_interner.get_entry_str(geoid)
 	}
 }
