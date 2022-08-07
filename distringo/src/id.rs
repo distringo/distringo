@@ -12,6 +12,23 @@ impl From<String> for GeoId {
 	}
 }
 
+#[cfg(test)]
+mod from {
+	use super::GeoId;
+
+	#[cfg(test)]
+	mod string {
+		use super::GeoId;
+
+		#[test]
+		fn it_works() {
+			let string: String = String::from("hello, world!");
+			let result: GeoId = GeoId::from(string);
+			assert!(result.is_raw());
+		}
+	}
+}
+
 impl GeoId {
 	const fn is_interned(&self) -> bool {
 		match self {
