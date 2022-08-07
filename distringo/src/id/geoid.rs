@@ -1,4 +1,4 @@
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Interned(u32);
 
 impl From<u32> for Interned {
@@ -42,5 +42,11 @@ impl From<String> for Raw {
 impl From<Raw> for String {
 	fn from(raw: Raw) -> Self {
 		raw.0
+	}
+}
+
+impl AsRef<str> for Raw {
+	fn as_ref(&self) -> &str {
+		self.0.as_str()
 	}
 }

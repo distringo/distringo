@@ -940,6 +940,7 @@ name = "palapelify"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "distringo",
  "geo",
  "geo-types",
  "geojson",
