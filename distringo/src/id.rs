@@ -58,20 +58,8 @@ impl GeoIdInterner {
 		self.strings.get(name as usize)
 	}
 
-	#[deprecated = "switch to GeoId-based interfaces"]
-	fn get_rc(&self, name: u32) -> Option<Rc<Box<str>>> {
-		self.get_entry(name).map(|rc| rc.clone())
-	}
-
 	fn get_bstr(&self, name: u32) -> Option<Box<str>> {
 		self.get_entry(name).map(|rc| (*rc.clone()).clone())
-	}
-
-	#[deprecated = "switch to GeoId-based interfaces"]
-	fn get_cloned(&self, name: u32) -> Option<String> {
-		self
-			.get_entry(name)
-			.map(|rc| (*(*rc)).clone().into_string())
 	}
 
 	pub fn get(&self, geoid: GeoId) -> Option<GeoId> {
@@ -84,8 +72,6 @@ impl GeoIdInterner {
 
 #[cfg(test)]
 mod interner {
-	use crate::id::geoid;
-
 	use super::{GeoId, GeoIdInterner};
 
 	#[test]
@@ -151,31 +137,6 @@ mod interner {
 			assert_eq!(interner.intern_raw("a string".into()), 0);
 			assert_eq!(interner.intern_raw("a string".into()), 0);
 			assert_eq!(interner.intern_raw("another string".into()), 1);
-		}
-
-		#[test]
-		#[deprecated]
-		fn intern_and_get() {
-			let mut interner = GeoIdInterner::new();
-
-			let result_0 = interner.intern_raw("a string".into());
-			let result_1 = interner.intern_raw("another string".into());
-
-			assert_ne!(result_0, result_1);
-
-			let result_0 = interner.get_rc(result_0);
-			assert!(result_0.is_some());
-			let result_0 = result_0.unwrap();
-			let result_0 = &*result_0;
-			assert_eq!(*result_0, "a string".into());
-
-			let result_1 = interner.get_rc(result_1);
-			assert!(result_1.is_some());
-			let result_1 = result_1.unwrap();
-			let result_1 = &*result_1;
-			assert_eq!(*result_1, "another string".into());
-
-			assert_eq!(interner.get_rc(1675), None);
 		}
 	}
 }
