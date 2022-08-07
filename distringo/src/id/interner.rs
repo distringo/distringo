@@ -94,19 +94,17 @@ fn intern_and_get_multiple() {
 	let geoid_0_2 = interner.intern(String::from("a string").into());
 	let geoid_1_1 = interner.intern(String::from("another string").into());
 
-	match (
+	let ((name_0_0, name_0_1, name_0_2), (name_1_0, name_1_1)) = (
 		(
 			u32::from(geoid_0_0),
 			u32::from(geoid_0_1),
 			u32::from(geoid_0_2),
 		),
 		(u32::from(geoid_1_0), u32::from(geoid_1_1)),
-	) {
-		((name_0_0, name_0_1, name_0_2), (name_1_0, name_1_1)) => {
-			assert!(name_0_0 == name_0_1 && name_0_1 == name_0_2);
-			assert!(name_1_0 == name_1_1);
-		}
-	}
+	);
+
+	assert!(name_0_0 == name_0_1 && name_0_1 == name_0_2);
+	assert!(name_1_0 == name_1_1);
 }
 
 #[cfg(test)]
