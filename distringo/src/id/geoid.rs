@@ -1,12 +1,12 @@
 #[derive(Clone, Debug)]
 pub enum GeoId {
 	Interned(u32),
-	Raw(Box<str>),
+	Raw(String),
 }
 
 impl From<String> for GeoId {
 	fn from(s: String) -> Self {
-		Self::Raw(s.into_boxed_str())
+		Self::Raw(s)
 	}
 }
 

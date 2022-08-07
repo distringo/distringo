@@ -1,15 +1,15 @@
-use std::{collections::HashMap, rc::Rc};
+use std::{borrow::Cow, collections::HashMap, rc::Rc};
 
 mod geoid;
 pub use geoid::*;
 
 #[derive(Default)]
-struct GeoIdInterner {
-	names: std::collections::HashMap<Rc<Box<str>>, u32>,
-	strings: Vec<Rc<Box<str>>>,
+struct GeoIdInterner<'i> {
+	names: std::collections::HashMap<Cow<'i, str>, u32>,
+	strings: Vec<Cow<'i, str>>,
 }
 
-impl GeoIdInterner {
+impl<'i> GeoIdInterner<'i> {
 	pub fn new() -> Self {
 		Self::default()
 	}
@@ -27,7 +27,7 @@ impl GeoIdInterner {
 
 	pub fn intern(&mut self, geoid: GeoId) -> GeoId {
 		match geoid {
-			GeoId::Raw(str) => GeoId::Interned(self.intern_raw(str)),
+			GeoId::Raw(str) => GeoId::Interned(self.intern_raw(&str)),
 			GeoId::Interned(name) => {
 				debug_assert!(self.contains_symbol(name));
 				geoid
@@ -35,37 +35,64 @@ impl GeoIdInterner {
 		}
 	}
 
-	fn intern_raw(&mut self, string: Box<str>) -> u32 {
-		if let Some(&symbol) = self.names.get(&string) {
+	fn intern_raw_string(&mut self, string: String) -> u32 {
+		if let Some(&symbol) = self.names.get(string.as_str()) {
 			return symbol;
 		}
 
-		let rc = std::rc::Rc::new(string);
+		let string: Cow<'i, str> = string.into();
 
 		// Begin critical section. Insert string, then check len.
-		self.strings.push(rc.clone());
+		self.strings.push(string.clone());
 
 		let symbol = self.strings.len() as usize - 1;
 		// End critical section. Len is now a valid name.
 
 		let symbol: u32 = symbol as u32;
 
-		self.names.insert(rc, symbol);
+		self.names.insert(string, symbol);
 		symbol
 	}
 
-	fn get_entry(&self, name: u32) -> Option<&Rc<Box<str>>> {
+	fn intern_raw(&mut self, string: &str) -> u32 {
+		self.intern_raw_string(String::from(string))
+	}
+
+	fn get_entry(&self, name: u32) -> Option<&Cow<str>> {
 		self.strings.get(name as usize)
 	}
 
-	fn get_box_str_cloned(&self, name: u32) -> Option<Box<str>> {
-		self.get_entry(name).map(|rc| (*rc.clone()).clone())
+	fn get_cloned(&self, name: u32) -> Option<Cow<str>> {
+		self.get_entry(name).map(|str| str.clone())
+	}
+
+	fn get_str_raw(&self, name: u32) -> Option<&str> {
+		self.get_entry(name).map(|str| str.as_ref())
+	}
+
+	fn get_interned_str(&self, geoid: GeoId) -> Option<&str> {
+		match geoid {
+			GeoId::Interned(name) => self.get_str_raw(name),
+			// TODO: This could be smarter? Isn't a GeoId::Raw(String) -> Some(&str) conversion possible?
+			GeoId::Raw(_) => None,
+		}
+	}
+
+	fn get_string_raw(&self, name: u32) -> Option<String> {
+		self.get_cloned(name).map(|str| String::from(str))
+	}
+
+	fn get_string(&self, geoid: GeoId) -> Option<String> {
+		match geoid {
+			GeoId::Interned(name) => self.get_string_raw(name),
+			GeoId::Raw(string) => Some(string),
+		}
 	}
 
 	pub fn get(&self, geoid: GeoId) -> Option<GeoId> {
 		match geoid {
 			GeoId::Raw(ref _str) => Some(geoid),
-			GeoId::Interned(name) => self.get_box_str_cloned(name).map(GeoId::Raw),
+			GeoId::Interned(name) => self.get_string_raw(name).map(GeoId::Raw),
 		}
 	}
 }
