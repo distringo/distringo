@@ -1,6 +1,6 @@
-const apiUri = `${window.location.origin}/api/v0`;
+const apiUri = `${window.location.origin}`;
 
-export const API_ROUTE = (part: string) => `${apiUri}/${part}`
+export const API_ROUTE = (part: string) => `${apiUri}/${part}`;
 
 export const API = {
 	sessions: () => fetch(API_ROUTE("sessions")),

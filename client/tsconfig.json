@@ -5,11 +5,13 @@
     "noImplicitAny": true,
     "module": "es6",
     "target": "es5",
-    "jsx": "react",
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
     "lib": [
       "dom"
     ],
     "allowJs": true,
+    "checkJs": true,
     "sourceMap": true,
   },
   "exclude": [

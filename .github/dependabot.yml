@@ -14,7 +14,7 @@ updates:
   - dependency-type: all
 
 - package-ecosystem: npm
-  directory: "/"
+  directory: "client/"
   schedule:
     interval: weekly
     day: friday

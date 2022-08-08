@@ -1,0 +1,20 @@
+[package]
+name = "palapelify"
+publish = false
+version = "0.1.0"
+authors = ["Kristofer Rye <kristofer.rye@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+distringo = { path = "../distringo" }
+clap = "3.2.16"
+geo = "0.22.1"
+geojson = { version = "0.23.0", features = ["geo-types"] }
+geo-types = "0.7.4"
+itertools = "0.10.3"
+num-traits = "0.2.15"
+rayon = "1.5.3"
+serde_json = "1.0.81"
+string-interner = "0.14.0"
+tracing = "0.1.35"
+tracing-subscriber = "0.3.15"

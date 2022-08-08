@@ -1,32 +1,6 @@
-[package]
-name = "distringo"
-version = "0.1.0"
-authors = ["Kristofer Rye <kristofer.rye@gmail.com>"]
-license = "MIT"
-edition = "2018"
-
-[dependencies]
-config = { version = "0.11.0", default_features = false, features = ["json", "yaml"] }
-csv = "1.1.6"
-fnv = "1.0.7"
-geo = "0.18.0"
-geojson = "0.22.2"
-log = "0.4.14"
-lazy_static = "1.4.0"
-regex = "1.5.4"
-serde = { version = "1.0.126", features = ["derive"] }
-
-[dev-dependencies]
-criterion = "0.3.4"
-simple_logger = "1.11.0"
-serde_yaml = "0.8.17"
-
-[[bench]]
-name = "logical_record_position_index"
-path = "benches/index/logical_record_position.rs"
-harness = false
-
 [workspace]
 members = [
-	"server",
+	"distringo",
+	"distringo-server",
+	"palapelify",
 ]
