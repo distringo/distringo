@@ -21,7 +21,7 @@
   "dependencies": {
     "idb": "^7.0.2",
     "leaflet": "^1.8.0",
-    "preact": "^10.9.0",
+    "preact": "^10.10.2",
     "react-leaflet": "4.0.1",
     "@types/leaflet": "^1.7.10",
     "@types/geojson": "^7946.0.8"
