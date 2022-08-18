@@ -1,6 +1,6 @@
 pub use std::{borrow::Cow, collections::HashMap};
 
-use crate::id::geoid::{Interned, Raw};
+use crate::id::{Interned, Raw};
 
 #[derive(Default)]
 pub struct GeoIdInterner<'i> {
@@ -25,7 +25,7 @@ impl<'i> GeoIdInterner<'i> {
 		self.contains_symbol(interned.into())
 	}
 
-	pub fn intern(&mut self, raw: super::geoid::Raw) -> super::geoid::Interned {
+	pub fn intern(&mut self, raw: Raw) -> Interned {
 		self.intern_raw_string(raw.into()).into()
 	}
 

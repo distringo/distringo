@@ -1,7 +1,7 @@
 use crate::feature_id;
 use crate::point::GeometryPoint;
 
-use distringo::{GeoIdInterner, Interned};
+use distringo::{id::GeoIdInterner, id::Interned};
 
 use std::collections::{HashMap, HashSet};
 

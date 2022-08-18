@@ -19,5 +19,4 @@ pub use crate::config::*;
 //   (in debug mode, verify LOGRECNO match)
 //   ()
 
-mod id;
-pub use crate::id::*;
+pub mod id;
