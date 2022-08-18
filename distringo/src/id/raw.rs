@@ -1,17 +1,12 @@
 #[cfg(test)]
-mod raw {
+mod from {
 	use super::Raw;
 
-	#[cfg(test)]
-	mod from {
-		use super::Raw;
-
-		#[test]
-		fn string() {
-			let string: String = String::from("hello, world!");
-			let result: Raw = Raw::from(string.clone());
-			assert_eq!(result.0, string);
-		}
+	#[test]
+	fn string() {
+		let string: String = String::from("hello, world!");
+		let result: Raw = Raw::from(string.clone());
+		assert_eq!(result.0, string);
 	}
 }
 
