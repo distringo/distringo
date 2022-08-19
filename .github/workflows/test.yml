@@ -16,16 +16,14 @@ jobs:
     steps:
       - name: Install the appropriate Rust toolchain
         run: |
-          rustup toolchain install ${{ matrix.rust }}
+          rustup toolchain install ${{ matrix.rust }} --component rustfmt clippy
           rustup default ${{ matrix.rust }}
       - uses: actions/checkout@v1
       - name: Run rustfmt
         run: |
-          rustup component add rustfmt
           cargo fmt --all -- --check
       - name: Run clippy
         run: |
-          rustup component add clippy
           cargo clippy --workspace --all-features --all-targets -- -D clippy::all -W clippy::cargo -W clippy::pedantic -W clippy::cognitive-complexity
 
   test:
@@ -57,7 +55,7 @@ jobs:
           rustup toolchain install ${{ matrix.rust }} --component llvm-tools-preview
           rustup default ${{ matrix.rust }}
       - name: Install cargo-llvm-cov
-        run: cargo install cargo-llvm-cov --version=0.4.9
+        run: cargo install cargo-llvm-cov --version=0.4.14
       - uses: actions/checkout@v1
       - name: Run cargo-llvm-cov
         run: >

@@ -1,3 +1,10 @@
+// #![warn(
+// 	missing_docs,
+// 	rust_2018_idioms,
+// 	missing_debug_implementations,
+// 	rustdoc::broken_intra_doc_links
+// )]
+
 mod error;
 pub use crate::error::*;
 
@@ -11,3 +18,5 @@ pub use crate::config::*;
 // use geoid## => geographical header (geoid## in GEOCODE column) -> LOGRECNO => [for all files: offset for LOGRECNO]
 //   (in debug mode, verify LOGRECNO match)
 //   ()
+
+pub mod id;
