@@ -339,7 +339,6 @@ dependencies = [
  "config",
  "csv",
  "fnv",
- "futures",
  "geo",
  "geojson",
  "lazy_static",
@@ -353,8 +352,6 @@ dependencies = [
  "serde_yaml",
  "simple_logger",
  "thiserror",
- "tokio",
- "tokio-stream",
  "tracing",
  "tracing-subscriber",
 ]
