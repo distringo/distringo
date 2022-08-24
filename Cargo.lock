@@ -336,15 +336,11 @@ dependencies = [
 name = "distringo"
 version = "0.1.0"
 dependencies = [
- "axum",
  "config",
  "csv",
  "fnv",
- "futures",
  "geo",
  "geojson",
- "http",
- "hyper",
  "lazy_static",
  "log",
  "once_cell",
@@ -356,10 +352,6 @@ dependencies = [
  "serde_yaml",
  "simple_logger",
  "thiserror",
- "tokio",
- "tokio-stream",
- "tower",
- "tower-http",
  "tracing",
  "tracing-subscriber",
 ]
