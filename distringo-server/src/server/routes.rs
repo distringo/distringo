@@ -54,7 +54,7 @@ pub(super) fn app_router(config: &config::Config) -> Result<axum::Router, Runtim
 		.nest("/shapefiles", shapefiles::router(config))
 		.layer(TraceLayer::new_for_http())
 		.layer(error_handler)
-		.fallback(static_files_fallback);
+		.fallback_service(static_files_fallback);
 
 	Ok(router)
 }
