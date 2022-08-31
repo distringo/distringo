@@ -31,9 +31,9 @@ mod known {
 
 		Feature {
 			bbox,
-			properties,
 			geometry,
 			id,
+			properties,
 			foreign_members,
 		}
 	}
@@ -136,9 +136,9 @@ mod unknown {
 
 		Feature {
 			bbox,
-			properties,
 			geometry,
 			id,
+			properties,
 			foreign_members,
 		}
 	}
@@ -210,9 +210,9 @@ mod tests {
 
 		Feature {
 			bbox,
-			properties,
 			geometry,
 			id,
+			properties,
 			foreign_members,
 		}
 	}
