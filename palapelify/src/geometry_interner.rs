@@ -3,7 +3,7 @@ use crate::point::GeometryPoint;
 
 use distringo::{id::GeoIdInterner, id::Interned};
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 #[derive(Default)]
 pub struct GeometryInterner<'a> {
