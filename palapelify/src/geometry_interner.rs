@@ -32,6 +32,7 @@ impl<'a> GeometryInterner<'a> {
 		}
 	}
 
+	#[must_use = "returns an iterator, which does nothing if not consumed"]
 	fn points(&self) -> impl Iterator<Item = (&GeometryPoint, &HashSet<Interned>)> {
 		self.point_containers.iter()
 	}
