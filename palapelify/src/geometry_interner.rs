@@ -11,6 +11,13 @@ pub struct GeometryInterner<'a> {
 	point_containers: HashMap<GeometryPoint, HashSet<Interned>>,
 }
 
+#[test]
+fn default_empty() {
+	let interner = GeometryInterner::default();
+	assert!(interner.geoid_interner.count() == 0);
+	assert!(interner.point_containers.is_empty());
+}
+
 impl<'a> GeometryInterner<'a> {
 	#[must_use]
 	pub fn new() -> Self {
