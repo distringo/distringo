@@ -72,14 +72,14 @@ impl<'a> GeometryInterner<'a> {
 	pub fn compute_adjacencies(
 		&self,
 	) -> std::collections::BTreeMap<&str, std::collections::BTreeSet<&str>> {
+		use itertools::Itertools;
+		use rayon::iter::{ParallelBridge, ParallelIterator};
+
 		tracing::info!(
 			"Computing adjacencies on {} geoids ({} unique points)",
 			self.geoid_interner.count(),
 			self.point_containers.len()
 		);
-
-		use itertools::Itertools;
-		use rayon::iter::{ParallelBridge, ParallelIterator};
 
 		let maps = self
 			.points()
