@@ -22,7 +22,7 @@ impl<'a> GeometryInterner<'a> {
 
 		let points: HashSet<GeometryPoint> = geometry.coords_iter().map(GeometryPoint::from).collect();
 
-		for point in points.iter() {
+		for point in &points {
 			let point: GeometryPoint = point.clone();
 			self
 				.point_containers
@@ -58,7 +58,7 @@ impl<'a> GeometryInterner<'a> {
 	pub fn load_geojson(&mut self, geojson: geojson::GeoJson) {
 		match geojson {
 			geojson::GeoJson::FeatureCollection(fc) => {
-				for feature in fc.features.into_iter() {
+				for feature in fc.features {
 					if let Some((geoid, geometry)) = self.process_feature(feature) {
 						self.insert(geoid, geometry);
 					}
