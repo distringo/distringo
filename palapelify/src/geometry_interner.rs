@@ -70,9 +70,7 @@ impl<'a> GeometryInterner<'a> {
 	}
 
 	#[tracing::instrument(skip(self))]
-	pub fn compute_adjacencies(
-		&self,
-	) -> std::collections::BTreeMap<&str, std::collections::BTreeSet<&str>> {
+	pub fn compute_adjacencies(&self) -> BTreeMap<&str, BTreeSet<&str>> {
 		use itertools::Itertools;
 		use rayon::iter::{ParallelBridge, ParallelIterator};
 
@@ -85,23 +83,25 @@ impl<'a> GeometryInterner<'a> {
 		let maps = self
 			.points()
 			.par_bridge()
-			.filter_map(|(point, containing_geoids)| match containing_geoids.len() {
-				2.. => Some(
-					containing_geoids
-						.iter()
-						.permutations(2)
-						.map(|permutation| (permutation[0], permutation[1]))
-						.collect::<HashSet<(&Interned, &Interned)>>(),
-				),
-				1 => None,
-				0 => {
-					tracing::warn!("Point has no containing GeoIds");
-					None
-				}
-				_ => unreachable!(),
-			})
+			.filter_map(
+				|(_point, containing_geoids)| match containing_geoids.len() {
+					2.. => Some(
+						containing_geoids
+							.iter()
+							.permutations(2)
+							.map(|permutation| (permutation[0], permutation[1]))
+							.collect::<HashSet<(&Interned, &Interned)>>(),
+					),
+					1 => None,
+					0 => {
+						tracing::warn!("Point has no containing GeoIds");
+						None
+					}
+					_ => unreachable!(),
+				},
+			)
 			.fold(
-				std::collections::BTreeMap::new,
+				BTreeMap::new,
 				|mut map, pairs: HashSet<(&Interned, &Interned)>| {
 					tracing::trace!("Folding in {} entries", pairs.len());
 
@@ -111,7 +111,7 @@ impl<'a> GeometryInterner<'a> {
 
 						map
 							.entry(geoid_a)
-							.or_insert_with(std::collections::BTreeSet::new)
+							.or_insert_with(BTreeSet::new)
 							.insert(geoid_b);
 					}
 
@@ -125,25 +125,22 @@ impl<'a> GeometryInterner<'a> {
 		maps
 			.into_iter()
 			.inspect(|map| tracing::debug!("Merging {} entries", map.len()))
-			.flat_map(std::collections::BTreeMap::into_iter)
-			.fold(
-				std::collections::BTreeMap::new(),
-				|mut final_map, (&id, neighbors)| {
-					let id = self
-						.resolve_geoid(id)
-						.expect("attempted to resolve id at final step but id was not interned");
+			.flat_map(BTreeMap::into_iter)
+			.fold(BTreeMap::new(), |mut final_map, (&id, neighbors)| {
+				let id = self
+					.resolve_geoid(id)
+					.expect("attempted to resolve id at final step but id was not interned");
 
-					let neighbors = neighbors
-						.iter()
-						.filter_map(|&&neighbor_id| self.resolve_geoid(neighbor_id));
+				let neighbors = neighbors
+					.iter()
+					.filter_map(|&&neighbor_id| self.resolve_geoid(neighbor_id));
 
-					final_map
-						.entry(id)
-						.or_insert_with(std::collections::BTreeSet::new)
-						.extend(neighbors);
-					final_map
-				},
-			)
+				final_map
+					.entry(id)
+					.or_insert_with(BTreeSet::new)
+					.extend(neighbors);
+				final_map
+			})
 	}
 
 	fn resolve_geoid(&self, geoid: Interned) -> Option<&str> {
