@@ -1,3 +1,8 @@
+#![deny(clippy::all)]
+#![warn(clippy::cargo)]
+#![warn(clippy::pedantic)]
+#![warn(clippy::cognitive_complexity)]
+
 pub mod server;
 
 /// Get the settings from defaults, the environment, and the config file.
