@@ -1,3 +1,8 @@
+#![deny(clippy::all)]
+#![warn(clippy::cargo)]
+#![warn(clippy::pedantic)]
+#![warn(clippy::cognitive_complexity)]
+
 // #![cfg_attr(debug_assertions, allow(dead_code))]
 
 use palapelify::GeometryInterner;
