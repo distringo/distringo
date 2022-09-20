@@ -18,7 +18,7 @@ serde_yaml = "0.9.4"
 # Project-specific data structures and dependencies
 csv = "1.1.6"
 geo = "0.23.0"
-geojson = "0.23.0"
+geojson = "0.24.0"
 regex = "1.6.0"
 semver = "1.0.9"
 
