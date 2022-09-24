@@ -66,9 +66,10 @@ jobs:
           --lcov
           --output-path lcov.info
       - name: Upload coverage
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: bash <(curl -s https://codecov.io/bash) -X gcov
+        uses: codecov/codecov-action@v3.1.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true
       - uses: actions/upload-artifact@v1
         with:
           name: lcov.info
