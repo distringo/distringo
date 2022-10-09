@@ -1,6 +1,6 @@
 // import { API, API_ROUTE } from "./api";
 
-let container = document.querySelector("main.content");
+const container = document.querySelector("main.content");
 
 // import { DB } from "./db";
 
@@ -30,7 +30,7 @@ const SHAPEFILES: Array<ShapefileSpec> = [
 	// },
 ];
 
-let { minZoom, maxZoom, bounds } = getStartingMapBounds(SHAPEFILES);
+const { minZoom, maxZoom, bounds } = getStartingMapBounds(SHAPEFILES);
 
 interface ShapefileSpec {
 	id: string;
@@ -49,7 +49,7 @@ function getStartingMapBounds(shapefiles: Array<ShapefileSpec>): {
 
 	const bounds: L.LatLngBounds = L.latLngBounds([]);
 
-	for (let shapefile of shapefiles) {
+	for (const shapefile of shapefiles) {
 		if (shapefile.minZoom < minZoom || minZoom === undefined) {
 			minZoom = shapefile.minZoom;
 		}
@@ -85,7 +85,7 @@ class SessionPickerComponent extends React.Component<SessionPickerProps> {
 		event.preventDefault();
 
 		if (event.currentTarget instanceof HTMLSelectElement) {
-			let value: string = event.currentTarget.value;
+			const value: string = event.currentTarget.value;
 
 			if (value.length > 0) {
 				this.props.onSessionSelectionChanged(value);
@@ -116,9 +116,13 @@ class SessionPickerComponent extends React.Component<SessionPickerProps> {
 	}
 }
 
-interface MapControlProps {}
+interface MapControlProps {
+	// empty.
+}
 
-interface MapControlState {}
+interface MapControlState {
+	// empty.
+}
 
 class MapControl extends React.Component<MapControlProps, MapControlState> {
 	constructor(props: MapControlProps) {
