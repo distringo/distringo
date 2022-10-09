@@ -6,6 +6,19 @@ on:
     - cron: 0 0 * * *
 
 jobs:
+  check-client:
+    name: Check the code (client)
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [14, 16, 18]
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/checkout@v1
+
   check-rust:
     name: Check the code
     runs-on: ubuntu-20.04
