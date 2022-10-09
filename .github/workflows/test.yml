@@ -63,10 +63,14 @@ jobs:
       - name: Install dependencies
         working-directory: client
         run: npm ci
-      - name: Run rests
+      - name: Run tests
         working-directory: client
-        run: npm run test
-
+        run: npm run test -- --coverage
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3.1.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true
 
   test-rust:
     name: Test the code
