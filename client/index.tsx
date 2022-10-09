@@ -47,7 +47,7 @@ function getStartingMapBounds(shapefiles: Array<ShapefileSpec>): {
 	let minZoom = undefined;
 	let maxZoom = undefined;
 
-	let bounds: L.LatLngBounds = L.latLngBounds([]);
+	const bounds: L.LatLngBounds = L.latLngBounds([]);
 
 	for (let shapefile of shapefiles) {
 		if (shapefile.minZoom < minZoom || minZoom === undefined) {
@@ -121,7 +121,7 @@ interface MapControlProps {}
 interface MapControlState {}
 
 class MapControl extends React.Component<MapControlProps, MapControlState> {
-	constructor(props: {}) {
+	constructor(props: MapControlProps) {
 		super(props);
 	}
 
@@ -148,9 +148,13 @@ class DistringoClient extends React.Component<
 		this.state = { session: props.initialSession };
 	}
 
-	componentDidMount() {}
+	componentDidMount() {
+		return;
+	}
 
-	componentWillUnmount() {}
+	componentWillUnmount() {
+		return;
+	}
 
 	shouldComponentUpdate(
 		_nextProps: DistringoClientProps,
@@ -162,13 +166,17 @@ class DistringoClient extends React.Component<
 	getSnapshotBeforeUpdate(
 		_prevProps: DistringoClientProps,
 		_prevState: DistringoClientState
-	) {}
+	) {
+		return;
+	}
 
 	componentDidUpdate(
 		_prevProps: DistringoClientProps,
 		_prevState: DistringoClientState,
-		_snapshot: {}
-	) {}
+		_snapshot: ReturnType<typeof this.getSnapshotBeforeUpdate> | undefined
+	) {
+		return;
+	}
 
 	onSessionSelected = (id: string) => {
 		this.setState({ session: id });
