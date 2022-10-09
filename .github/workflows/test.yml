@@ -18,6 +18,8 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - uses: actions/checkout@v1
+      - name: Check client code formatting
+        run: npm run fmt -- --check
 
   check-rust:
     name: Check the code
