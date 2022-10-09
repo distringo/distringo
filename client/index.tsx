@@ -116,10 +116,12 @@ class SessionPickerComponent extends React.Component<SessionPickerProps> {
 	}
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface MapControlProps {
 	// empty.
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface MapControlState {
 	// empty.
 }
@@ -223,14 +225,16 @@ class DistringoClient extends React.Component<
 	}
 }
 
-const App = (
-	<DistringoClient
-		apiUrl={new URL(window.location.href)}
-		initialSession={null}
-	/>
-);
+if (container !== null) {
+	const App = (
+		<DistringoClient
+			apiUrl={new URL(window.location.href)}
+			initialSession={null}
+		/>
+	);
 
-React.render(App, container);
+	React.render(App, container);
+}
 
 // console.info("Initializing the map");
 
