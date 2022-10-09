@@ -33,6 +33,3 @@ lcov.info
 # Compiled public code
 /dist/
 !/dist/.keep
-
-# Downloaded and installed node modules
-/client/node_modules/

@@ -1,6 +1,6 @@
 // import { API, API_ROUTE } from "./api";
 
-let container = document.querySelector("main.content");
+const container = document.querySelector("main.content");
 
 // import { DB } from "./db";
 
@@ -30,14 +30,13 @@ const SHAPEFILES: Array<ShapefileSpec> = [
 	// },
 ];
 
-let { minZoom, maxZoom, bounds } = getStartingMapBounds(SHAPEFILES);
-
+const { minZoom, maxZoom, bounds } = getStartingMapBounds(SHAPEFILES);
 
 interface ShapefileSpec {
-	id: string,
-	minZoom?: number,
-	maxZoom?: number,
-	boundingBox?: L.LatLngBounds,
+	id: string;
+	minZoom?: number;
+	maxZoom?: number;
+	boundingBox?: L.LatLngBounds;
 }
 
 function getStartingMapBounds(shapefiles: Array<ShapefileSpec>): {
@@ -48,9 +47,9 @@ function getStartingMapBounds(shapefiles: Array<ShapefileSpec>): {
 	let minZoom = undefined;
 	let maxZoom = undefined;
 
-	let bounds: L.LatLngBounds = L.latLngBounds([]);
+	const bounds: L.LatLngBounds = L.latLngBounds([]);
 
-	for (let shapefile of shapefiles) {
+	for (const shapefile of shapefiles) {
 		if (shapefile.minZoom < minZoom || minZoom === undefined) {
 			minZoom = shapefile.minZoom;
 		}
@@ -67,15 +66,14 @@ function getStartingMapBounds(shapefiles: Array<ShapefileSpec>): {
 	return { minZoom, maxZoom, bounds };
 }
 
-
 interface Session {
-	name: string,
-	id: string,
+	name: string;
+	id: string;
 }
 
 interface SessionPickerProps {
-	sessions: Session[],
-	onSessionSelectionChanged: (id: string) => void,
+	sessions: Session[];
+	onSessionSelectionChanged: (id: string) => void;
 }
 
 class SessionPickerComponent extends React.Component<SessionPickerProps> {
@@ -87,111 +85,156 @@ class SessionPickerComponent extends React.Component<SessionPickerProps> {
 		event.preventDefault();
 
 		if (event.currentTarget instanceof HTMLSelectElement) {
-			let value: string = event.currentTarget.value;
+			const value: string = event.currentTarget.value;
 
 			if (value.length > 0) {
 				this.props.onSessionSelectionChanged(value);
 			}
 		} else {
-			throw new Error("onSessionSelected called when current target was not a Select element.");
+			throw new Error(
+				"onSessionSelected called when current target was not a Select element."
+			);
 		}
-	}
+	};
 
 	render() {
-		return <div class="session-picker">
-			<h1>Pick a Session</h1>
-			<select onChange={this.onSessionSelected}>
-				<option selected={true} value={null} disabled={true}>Pick an Option</option>
-				{this.props.sessions.map((session: Session) =>
-					<option key={session.id} value={session.id}>{session.name}</option>
-				)}
-			</select>
-		</div>;
+		return (
+			<div class="session-picker">
+				<h1>Pick a Session</h1>
+				<select onChange={this.onSessionSelected}>
+					<option selected={true} value={null} disabled={true}>
+						Pick an Option
+					</option>
+					{this.props.sessions.map((session: Session) => (
+						<option key={session.id} value={session.id}>
+							{session.name}
+						</option>
+					))}
+				</select>
+			</div>
+		);
 	}
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface MapControlProps {
+	// empty.
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface MapControlState {
-
+	// empty.
 }
-
 
 class MapControl extends React.Component<MapControlProps, MapControlState> {
-	constructor(props: {}) {
-		super(props)
+	constructor(props: MapControlProps) {
+		super(props);
 	}
 
 	render() {
-		return <RL.MapContainer></RL.MapContainer>
+		return <RL.MapContainer></RL.MapContainer>;
 	}
 }
 
-
 interface DistringoClientProps {
-	apiUrl: URL,
-	initialSession: string | null,
+	apiUrl: URL;
+	initialSession: string | null;
 }
 
 interface DistringoClientState {
-	session: string | null,
+	session: string | null;
 }
 
-class DistringoClient extends React.Component<DistringoClientProps, DistringoClientState> {
-
+class DistringoClient extends React.Component<
+	DistringoClientProps,
+	DistringoClientState
+> {
 	constructor(props: DistringoClientProps) {
 		super(props);
 		this.state = { session: props.initialSession };
 	}
 
 	componentDidMount() {
+		return;
 	}
 
 	componentWillUnmount() {
+		return;
 	}
 
-	shouldComponentUpdate(_nextProps: DistringoClientProps, _nextState: DistringoClientState): boolean {
+	shouldComponentUpdate(
+		_nextProps: DistringoClientProps,
+		_nextState: DistringoClientState
+	): boolean {
 		return true;
 	}
 
-	getSnapshotBeforeUpdate(_prevProps: DistringoClientProps, _prevState: DistringoClientState) {
+	getSnapshotBeforeUpdate(
+		_prevProps: DistringoClientProps,
+		_prevState: DistringoClientState
+	) {
+		return;
 	}
 
-	componentDidUpdate(_prevProps: DistringoClientProps, _prevState: DistringoClientState, _snapshot: {}) {
+	componentDidUpdate(
+		_prevProps: DistringoClientProps,
+		_prevState: DistringoClientState,
+		_snapshot: ReturnType<typeof this.getSnapshotBeforeUpdate> | undefined
+	) {
+		return;
 	}
 
 	onSessionSelected = (id: string) => {
 		this.setState({ session: id });
-	}
+	};
 
 	render() {
 		// TODO(rye): Fill this out with real data.
-		const sessions: Session[] = [{ id: "asdf", name: "asdf" }, { id: "jkl;", name: "jkl;" },];
+		const sessions: Session[] = [
+			{ id: "asdf", name: "asdf" },
+			{ id: "jkl;", name: "jkl;" },
+		];
 
 		// TODO(rye): If only one session, automate the pick to just the available session.
 		if (this.state.session === null) {
-			return <SessionPickerComponent sessions={sessions} onSessionSelectionChanged={this.onSessionSelected} />
+			return (
+				<SessionPickerComponent
+					sessions={sessions}
+					onSessionSelectionChanged={this.onSessionSelected}
+				/>
+			);
 		} else {
 			// TODO(rye): Extract this out.
-			return <RL.MapContainer
-				className="distringo-map-container"
-				center={[38.0, -97.0]}
-				zoom={5}
-				zoomSnap={0.25}
-				zoomDelta={0.25}
-				boxZoom={false}
-				doubleClickZoom={false}
-			>
-				<RL.TileLayer attribution='Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-			</RL.MapContainer>
+			return (
+				<RL.MapContainer
+					className="distringo-map-container"
+					center={[38.0, -97.0]}
+					zoom={5}
+					zoomSnap={0.25}
+					zoomDelta={0.25}
+					boxZoom={false}
+					doubleClickZoom={false}
+				>
+					<RL.TileLayer
+						attribution='Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
+						url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+					/>
+				</RL.MapContainer>
+			);
 		}
 	}
 }
 
-const App = <DistringoClient apiUrl={new URL(window.location.href)} initialSession={null} />;
+if (container !== null) {
+	const App = (
+		<DistringoClient
+			apiUrl={new URL(window.location.href)}
+			initialSession={null}
+		/>
+	);
 
-React.render(App, container);
+	React.render(App, container);
+}
 
 // console.info("Initializing the map");
 

@@ -6,7 +6,29 @@ on:
     - cron: 0 0 * * *
 
 jobs:
-  check:
+  check-client:
+    name: Check the code (client)
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18]
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/checkout@v1
+      - name: Install dependencies
+        working-directory: client
+        run: npm ci
+      - name: Check client code formatting
+        working-directory: client
+        run: npx pretty-quick --check
+      - name: Run eslint
+        working-directory: client
+        run: npx eslint .
+
+  check-rust:
     name: Check the code
     runs-on: ubuntu-20.04
     strategy:
@@ -26,7 +48,31 @@ jobs:
         run: |
           cargo clippy --workspace --all-features --all-targets
 
-  test:
+  test-client:
+    name: Test the code (client)
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18]
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/checkout@v1
+      - name: Install dependencies
+        working-directory: client
+        run: npm ci
+      - name: Run tests
+        working-directory: client
+        run: npm run test -- --coverage
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3.1.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true
+
+  test-rust:
     name: Test the code
     runs-on: ubuntu-20.04
     strategy:
@@ -43,7 +89,7 @@ jobs:
         run: |
           cargo test --workspace --all-features --all-targets --no-fail-fast
 
-  coverage:
+  coverage-rust:
     name: Measure test coverage
     runs-on: ubuntu-20.04
     strategy:

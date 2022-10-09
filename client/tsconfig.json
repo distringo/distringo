@@ -1,20 +1,17 @@
 {
-  "compilerOptions": {
-    "outDir": "../dist/",
-    "moduleResolution": "node",
-    "noImplicitAny": true,
-    "module": "es6",
-    "target": "es5",
-    "jsx": "react-jsx",
-    "jsxImportSource": "preact",
-    "lib": [
-      "dom"
-    ],
-    "allowJs": true,
-    "checkJs": true,
-    "sourceMap": true,
-  },
-  "exclude": [
-    "webpack.config.js"
-  ]
+	"compilerOptions": {
+		"outDir": "../dist/",
+		"moduleResolution": "node",
+		"noImplicitAny": true,
+		"module": "es6",
+		"target": "es5",
+		"jsx": "react-jsx",
+		"jsxImportSource": "preact",
+		"lib": ["dom"],
+		"allowJs": true,
+		"checkJs": true,
+		"sourceMap": true,
+		"strictNullChecks": true
+	},
+	"exclude": ["webpack.config.js"]
 }
