@@ -19,10 +19,13 @@ jobs:
           node-version: ${{ matrix.node }}
       - uses: actions/checkout@v1
       - name: Install dependencies
+        working-directory: client
         run: npm ci
       - name: Check client code formatting
+        working-directory: client
         run: npx pretty-quick --check
       - name: Run eslint
+        working-directory: client
         run: npx eslint .
 
   check-rust:
