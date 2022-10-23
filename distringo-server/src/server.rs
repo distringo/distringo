@@ -3,7 +3,58 @@ use std::{
 	net::{IpAddr, SocketAddr},
 };
 
+use core::{fmt, str::FromStr};
+
 use crate::Result;
+
+// version: "0.0.0"
+//
+// server:
+//   host: "::"
+//   port: 2020
+//   data: ./data/
+//
+// datasets:
+//   in2010-pl94_171:
+//     schema: schemas/2010/pl94_171.yaml
+//     files:
+//       geo: ingeo2010.pl
+//       file01: in000012010.pl
+//       file02: in000022010.pl
+//       file03: in000032010.pl
+//
+// shapefiles:
+//   tl_2010_18157_tabblock:
+//     type: tabular_block
+//     file: data/tl_2010_18157_tabblock10.min.geojson
+//
+// sessions:
+//   tippecanoe-2010:
+//     name: "tippecanoe county 2010"
+//     datasets:
+//       - in2010-pl94_171
+//     shapefiles:
+//       - tl_2010_18157_tabblock
+
+#[derive(serde::Deserialize)]
+struct AppConfig {
+	server: ServerConfig,
+	datasets: DatasetsConfig,
+	shapefiles: ShapefilesConfig,
+	sessions: SessionsConfig,
+}
+
+#[derive(serde::Deserialize)]
+struct ServerConfig {}
+
+#[derive(serde::Deserialize)]
+struct DatasetsConfig {}
+
+#[derive(serde::Deserialize)]
+struct ShapefilesConfig {}
+
+#[derive(serde::Deserialize)]
+struct SessionsConfig {}
 
 mod routes;
 
