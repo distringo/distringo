@@ -1,4 +1,4 @@
-use std::net::{IpAddr, Ipv6Addr};
+use std::net::{IpAddr, Ipv6Addr, SocketAddr};
 
 #[derive(serde::Deserialize)]
 pub struct ServerConfig {
@@ -22,6 +22,13 @@ impl ServerConfig {
 
 	pub fn port(&self) -> &u16 {
 		&self.port
+	}
+
+	pub fn bind_addr(&self) -> SocketAddr {
+		let host = self.host;
+		let port = self.port;
+
+		SocketAddr::new(host, port)
 	}
 }
 

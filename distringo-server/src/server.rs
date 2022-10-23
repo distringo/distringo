@@ -61,22 +61,14 @@ impl ExecutionPlan {
 		Ok(())
 	}
 
-	fn bind_addr(&self) -> SocketAddr {
-		let host = *self.config.server().host();
-
-		let port = *self.config.server().port();
-
-		SocketAddr::new(host, port)
-	}
-
 	pub async fn execute(&mut self) -> Result<()> {
 		tracing::trace!("Executing Execution Plan");
 
-		let socket = self.bind_addr();
-
-		tracing::trace!(?socket);
+		let socket = self.config.server().bind_addr();
 
 		let router = routes::app_router(&self.config)?;
+
+		tracing::info!(?socket, "starting server");
 
 		axum::Server::bind(&socket)
 			.serve(router.into_make_service())
