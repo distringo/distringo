@@ -39,7 +39,9 @@ async fn handle_error(error: tower::BoxError) -> Result<impl IntoResponse, impl 
 	}
 }
 
-pub(super) fn app_router(config: &crate::server::AppConfig) -> Result<axum::Router, RuntimeError> {
+pub(super) fn app_router(
+	config: &crate::settings::AppConfig,
+) -> Result<axum::Router, RuntimeError> {
 	use axum::error_handling::HandleErrorLayer;
 
 	let error_handler = tower::ServiceBuilder::new()
