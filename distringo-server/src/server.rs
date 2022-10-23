@@ -61,18 +61,18 @@ impl ExecutionPlan {
 		Ok(())
 	}
 
-	fn bind_addr(&self) -> Result<SocketAddr> {
+	fn bind_addr(&self) -> SocketAddr {
 		let host = *self.config.server().host();
 
 		let port = *self.config.server().port();
 
-		Ok(SocketAddr::new(host, port))
+		SocketAddr::new(host, port)
 	}
 
 	pub async fn execute(&mut self) -> Result<()> {
 		tracing::trace!("Executing Execution Plan");
 
-		let socket = self.bind_addr()?;
+		let socket = self.bind_addr();
 
 		tracing::trace!(?socket);
 
