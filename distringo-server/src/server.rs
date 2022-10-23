@@ -36,8 +36,33 @@ use crate::Result;
 //     shapefiles:
 //       - tl_2010_18157_tabblock
 
+fn de_version<'de, D: serde::de::Deserializer<'de>>(
+	deserializer: D,
+) -> Result<semver::Version, D::Error> {
+	struct StringVisitor;
+
+	impl<'de> serde::de::Visitor<'de> for StringVisitor {
+		type Value = semver::Version;
+
+		fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+			formatter.write_str("a string that can be parsed as a semver::Version using FromStr")
+		}
+
+		fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+		where
+			E: serde::de::Error,
+		{
+			semver::Version::from_str(v).map_err(E::custom)
+		}
+	}
+
+	deserializer.deserialize_string(StringVisitor)
+}
+
 #[derive(serde::Deserialize)]
 struct AppConfig {
+	#[serde(deserialize_with = "de_version")]
+	version: semver::Version,
 	server: ServerConfig,
 	datasets: DatasetsConfig,
 	shapefiles: ShapefilesConfig,
