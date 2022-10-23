@@ -15,7 +15,6 @@ pub enum AppConfigError {
 	InvalidVersion,
 }
 
-#[derive(Default)]
 pub struct ExecutionPlan {
 	config: AppConfig,
 }
