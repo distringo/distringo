@@ -39,10 +39,7 @@ impl From<config::Config> for ExecutionPlan {
 
 impl From<AppConfig> for ExecutionPlan {
 	fn from(config: AppConfig) -> Self {
-		Self {
-			config,
-			..Default::default()
-		}
+		Self { config }
 	}
 }
 
