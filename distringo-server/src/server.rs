@@ -25,13 +25,13 @@ impl From<AppConfig> for ExecutionPlan {
 	}
 }
 
+const CONFIG_VERSION_REQUIREMENT: &str = "~0.0.0";
+
 impl ExecutionPlan {
-	fn validate_version(version: &Option<semver::Version>) -> Result<(), AppConfigError> {
-		const VERSION_REQUIREMENT: &str = "~0.0.0";
-
-		let requirement = semver::VersionReq::parse(VERSION_REQUIREMENT)
-			.expect("internally-generated version requirement was invalid");
-
+	fn validate_version(
+		version: &Option<semver::Version>,
+		requirement: semver::VersionReq,
+	) -> Result<(), AppConfigError> {
 		if let Some(version) = version {
 			if requirement.matches(version) {
 				Ok(())
@@ -47,7 +47,7 @@ impl ExecutionPlan {
 		let config = &self.config;
 
 		// Verify that the version of the configuration is valid.
-		Self::validate_version(config.version())?;
+		Self::validate_version(config.version(), CONFIG_VERSION_REQUIREMENT.parse()?)?;
 
 		Ok(())
 	}
@@ -96,20 +96,29 @@ mod execution_plan {
 
 		#[test]
 		fn valid_version() {
-			let config_version = Some("0.0.0".parse().expect("hard-coded input should parse"));
-			assert!(ExecutionPlan::validate_version(&config_version).is_ok());
+			let version = Some("0.0.0".parse().expect("hard-coded input should parse"));
+			let requirement = "~0.0.0"
+				.parse()
+				.expect("hard-coded requirement should parse");
+			assert!(ExecutionPlan::validate_version(&version, requirement).is_ok());
 		}
 
 		#[test]
 		fn version_that_does_not_meet_requirements() {
-			let config_version = Some("4.0.0".parse().expect("hard-coded input should parse"));
-			assert!(ExecutionPlan::validate_version(&config_version).is_err());
+			let version = Some("4.0.0".parse().expect("hard-coded input should parse"));
+			let requirement = "~0.0.0"
+				.parse()
+				.expect("hard-coded requirement should parse");
+			assert!(ExecutionPlan::validate_version(&version, requirement).is_err());
 		}
 
 		#[test]
 		fn no_version_does_not_meet_requirements() {
-			let config_version = None;
-			assert!(ExecutionPlan::validate_version(&config_version).is_err());
+			let version = None;
+			let requirement = "~0.0.0"
+				.parse()
+				.expect("hard-coded requirement should parse");
+			assert!(ExecutionPlan::validate_version(&version, requirement).is_err());
 		}
 	}
 }
