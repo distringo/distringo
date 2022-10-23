@@ -25,7 +25,9 @@ impl ShapefileDatabase {
 	}
 }
 
-pub(crate) fn router(config: &config::Config) -> Router {
+pub(crate) fn router(config: &crate::server::ShapefilesConfig) -> Router {
+	println!("{:?}", config);
+
 	let db = ShapefileDatabase {
 		entries: HashMap::new(),
 	};

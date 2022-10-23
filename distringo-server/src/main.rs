@@ -61,7 +61,7 @@ async fn main() -> Result<()> {
 		tracing_subscriber::fmt().with_env_filter(filter).init();
 	}
 
-	let settings = get_settings()?;
+	let settings: server::AppConfig = get_settings()?.try_deserialize()?;
 
 	let mut plan: server::ExecutionPlan = server::ExecutionPlan::from(settings);
 	plan.validate().await?;

@@ -38,11 +38,11 @@ use crate::Result;
 
 fn de_version<'de, D: serde::de::Deserializer<'de>>(
 	deserializer: D,
-) -> Result<semver::Version, D::Error> {
+) -> Result<Option<semver::Version>, D::Error> {
 	struct StringVisitor;
 
 	impl<'de> serde::de::Visitor<'de> for StringVisitor {
-		type Value = semver::Version;
+		type Value = Option<semver::Version>;
 
 		fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
 			formatter.write_str("a string that can be parsed as a semver::Version using FromStr")
@@ -52,33 +52,92 @@ fn de_version<'de, D: serde::de::Deserializer<'de>>(
 		where
 			E: serde::de::Error,
 		{
-			semver::Version::from_str(v).map_err(E::custom)
+			match semver::Version::from_str(v) {
+				Ok(v) => Ok(Some(v)),
+				Err(e) => Err(E::custom(e)),
+			}
 		}
 	}
 
 	deserializer.deserialize_string(StringVisitor)
 }
 
-#[derive(serde::Deserialize)]
-struct AppConfig {
+#[derive(serde::Deserialize, Default)]
+pub struct AppConfig {
 	#[serde(deserialize_with = "de_version")]
-	version: semver::Version,
+	version: Option<semver::Version>,
 	server: ServerConfig,
-	datasets: DatasetsConfig,
+	datasets: Option<DatasetsConfig>,
 	shapefiles: ShapefilesConfig,
-	sessions: SessionsConfig,
+	sessions: Option<SessionsConfig>,
+}
+
+impl AppConfig {
+	fn version(&self) -> &Option<semver::Version> {
+		&self.version
+	}
+
+	fn server(&self) -> &ServerConfig {
+		&self.server
+	}
+
+	fn datasets(&self) -> &Option<DatasetsConfig> {
+		&self.datasets
+	}
+
+	fn shapefiles(&self) -> &ShapefilesConfig {
+		&self.shapefiles
+	}
+
+	fn sessions(&self) -> &Option<SessionsConfig> {
+		&self.sessions
+	}
 }
 
 #[derive(serde::Deserialize)]
-struct ServerConfig {}
+struct ServerConfig {
+	host: IpAddr,
+	port: u16,
+}
 
-#[derive(serde::Deserialize)]
+impl Default for ServerConfig {
+	fn default() -> Self {
+		Self {
+			host: IpAddr::V6(std::net::Ipv6Addr::from([0; 16])),
+			port: 2020_u16,
+		}
+	}
+}
+
+impl ServerConfig {
+	fn host(&self) -> &IpAddr {
+		&self.host
+	}
+
+	fn port(&self) -> &u16 {
+		&self.port
+	}
+}
+
+#[derive(serde::Deserialize, Default)]
 struct DatasetsConfig {}
 
-#[derive(serde::Deserialize)]
-struct ShapefilesConfig {}
+// TODO: Move into shapefiles route section
+#[derive(Debug, serde::Deserialize, Default)]
+pub struct ShapefilesConfig(HashMap<String, ShapefileConfig>);
 
-#[derive(serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, Default)]
+pub struct ShapefileConfig {
+	ty: Option<ShapefileType>,
+	file: String,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub enum ShapefileType {
+	TabularBlock,
+}
+
+#[derive(serde::Deserialize, Default)]
 struct SessionsConfig {}
 
 mod routes;
@@ -98,12 +157,21 @@ type DatasetId = String;
 
 #[derive(Default)]
 pub struct ExecutionPlan {
-	config: config::Config,
-	datasets: HashMap<DatasetId, ()>,
+	config: AppConfig,
 }
 
 impl From<config::Config> for ExecutionPlan {
 	fn from(config: config::Config) -> Self {
+		todo!()
+		// Self {
+		// 	config,
+		// 	..Default::default()
+		// }
+	}
+}
+
+impl From<AppConfig> for ExecutionPlan {
+	fn from(config: AppConfig) -> Self {
 		Self {
 			config,
 			..Default::default()
@@ -112,16 +180,18 @@ impl From<config::Config> for ExecutionPlan {
 }
 
 impl ExecutionPlan {
-	fn validate_version(version: &str) -> Result<(), AppConfigError> {
+	fn validate_version(version: &Option<semver::Version>) -> Result<(), AppConfigError> {
 		const VERSION_REQUIREMENT: &str = "~0.0.0";
 
 		let requirement = semver::VersionReq::parse(VERSION_REQUIREMENT)
 			.expect("internally-generated version requirement was invalid");
 
-		let version: semver::Version = version.parse()?;
-
-		if requirement.matches(&version) {
-			Ok(())
+		if let Some(version) = version {
+			if requirement.matches(&version) {
+				Ok(())
+			} else {
+				Err(AppConfigError::InvalidVersion)
+			}
 		} else {
 			Err(AppConfigError::InvalidVersion)
 		}
@@ -131,18 +201,18 @@ impl ExecutionPlan {
 		let config = &self.config;
 
 		// Verify that the version is valid.
-		let config_version = config.get_string("version")?;
-		Self::validate_version(&config_version)?;
+		let config_version = self.config.version();
+		Self::validate_version(config_version)?;
 
 		// Load up all the dataset configurations.
-		for (identifier, value) in config.get_table("datasets")? {
-			println!("{:?}, {:?}", identifier, value);
-		}
+		// for (identifier, value) in config.get_table("datasets")? {
+		// 	println!("{:?}, {:?}", identifier, value);
+		// }
 
 		// Load up all the shapefile cofigurations.
-		for (identifier, value) in config.get_table("shapefiles")? {
-			println!("{:?}, {:?}", identifier, value);
-		}
+		// for (identifier, value) in config.get_table("shapefiles")? {
+		// 	println!("{:?}, {:?}", identifier, value);
+		// }
 
 		Ok(())
 	}
@@ -157,17 +227,9 @@ impl ExecutionPlan {
 	}
 
 	fn bind_addr(&self) -> Result<SocketAddr> {
-		let host: IpAddr = self
-			.config
-			.get_string("server.host")?
-			.parse()
-			.map_err(|_| crate::RuntimeError::InvalidServerHost)?;
+		let host = *self.config.server().host();
 
-		let port: u16 = self
-			.config
-			.get_int("server.port")?
-			.try_into()
-			.map_err(|_| crate::RuntimeError::InvalidServerPort)?;
+		let port = *self.config.server().port();
 
 		Ok(SocketAddr::new(host, port))
 	}
@@ -175,13 +237,11 @@ impl ExecutionPlan {
 	pub async fn execute(&mut self) -> Result<()> {
 		tracing::trace!("Executing Execution Plan");
 
-		let config: &config::Config = &self.config;
-
 		let socket = self.bind_addr()?;
 
 		tracing::trace!(?socket);
 
-		let router = routes::app_router(config)?;
+		let router = routes::app_router(&self.config)?;
 
 		axum::Server::bind(&socket)
 			.serve(router.into_make_service())
@@ -201,14 +261,20 @@ mod execution_plan {
 
 		#[test]
 		fn valid_version() {
-			let config_version = "0.0.0";
-			assert!(ExecutionPlan::validate_version(config_version).is_ok());
+			let config_version = Some("0.0.0".parse().expect("hard-coded input should parse"));
+			assert!(ExecutionPlan::validate_version(&config_version).is_ok());
 		}
 
 		#[test]
-		fn non_version_err() {
-			let config_version = "not a version";
-			assert!(ExecutionPlan::validate_version(config_version).is_err());
+		fn version_that_does_not_meet_requirements() {
+			let config_version = Some("4.0.0".parse().expect("hard-coded input should parse"));
+			assert!(ExecutionPlan::validate_version(&config_version).is_err());
+		}
+
+		#[test]
+		fn no_version_does_not_meet_requirements() {
+			let config_version = None;
+			assert!(ExecutionPlan::validate_version(&config_version).is_err());
 		}
 	}
 }

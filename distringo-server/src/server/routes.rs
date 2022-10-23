@@ -39,7 +39,7 @@ async fn handle_error(error: tower::BoxError) -> Result<impl IntoResponse, impl 
 	}
 }
 
-pub(super) fn app_router(config: &config::Config) -> Result<axum::Router, RuntimeError> {
+pub(super) fn app_router(config: &crate::server::AppConfig) -> Result<axum::Router, RuntimeError> {
 	use axum::error_handling::HandleErrorLayer;
 
 	let error_handler = tower::ServiceBuilder::new()
@@ -51,7 +51,7 @@ pub(super) fn app_router(config: &config::Config) -> Result<axum::Router, Runtim
 
 	let router = axum::Router::new()
 		.route("/ping", get(ping))
-		.nest("/shapefiles", shapefiles::router(config))
+		.nest("/shapefiles", shapefiles::router(config.shapefiles()))
 		.layer(TraceLayer::new_for_http())
 		.layer(error_handler)
 		.fallback_service(static_files_fallback);
