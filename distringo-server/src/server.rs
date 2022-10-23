@@ -64,19 +64,8 @@ impl ExecutionPlan {
 	pub async fn validate(&self) -> Result<(), AppConfigError> {
 		let config = &self.config;
 
-		// Verify that the version is valid.
-		let config_version = self.config.version();
-		Self::validate_version(config_version)?;
-
-		// Load up all the dataset configurations.
-		// for (identifier, value) in config.get_table("datasets")? {
-		// 	println!("{:?}, {:?}", identifier, value);
-		// }
-
-		// Load up all the shapefile cofigurations.
-		// for (identifier, value) in config.get_table("shapefiles")? {
-		// 	println!("{:?}, {:?}", identifier, value);
-		// }
+		// Verify that the version of the configuration is valid.
+		Self::validate_version(config.version())?;
 
 		Ok(())
 	}
