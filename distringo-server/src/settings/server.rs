@@ -50,7 +50,7 @@ mod tests {
 	fn host_works() {
 		let config: ServerConfig = ServerConfig {
 			host: std::net::IpAddr::V4(std::net::Ipv4Addr::new(127, 0, 0, 1)),
-			port: 0_16,
+			port: 0_u16,
 		};
 
 		assert_eq!(
