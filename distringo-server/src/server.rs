@@ -20,21 +20,9 @@ pub enum AppConfigError {
 	InvalidVersion,
 }
 
-type DatasetId = String;
-
 #[derive(Default)]
 pub struct ExecutionPlan {
 	config: AppConfig,
-}
-
-impl From<config::Config> for ExecutionPlan {
-	fn from(config: config::Config) -> Self {
-		todo!()
-		// Self {
-		// 	config,
-		// 	..Default::default()
-		// }
-	}
 }
 
 impl From<AppConfig> for ExecutionPlan {
