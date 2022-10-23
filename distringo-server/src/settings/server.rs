@@ -34,6 +34,8 @@ impl ServerConfig {
 
 #[cfg(test)]
 mod tests {
+	use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+
 	use super::ServerConfig;
 
 	#[cfg(test)]
@@ -53,16 +55,46 @@ mod tests {
 		}
 	}
 
+	const fn basic_config_ipv4_addr() -> Ipv4Addr {
+		std::net::Ipv4Addr::new(127, 0, 0, 1)
+	}
+
+	const fn basic_config_ip_addr() -> IpAddr {
+		std::net::IpAddr::V4(basic_config_ipv4_addr())
+	}
+
+	const fn basic_config_port() -> u16 {
+		32040_u16
+	}
+
+	const fn basic_config() -> ServerConfig {
+		ServerConfig {
+			host: basic_config_ip_addr(),
+			port: basic_config_port(),
+		}
+	}
+
 	#[test]
 	fn host_works() {
-		let config: ServerConfig = ServerConfig {
-			host: std::net::IpAddr::V4(std::net::Ipv4Addr::new(127, 0, 0, 1)),
-			port: 0_u16,
-		};
+		let config: ServerConfig = basic_config();
+
+		assert_eq!(config.host(), &basic_config_ip_addr());
+	}
+
+	#[test]
+	fn port_works() {
+		let config: ServerConfig = basic_config();
+
+		assert_eq!(config.port(), &basic_config_port());
+	}
+
+	#[test]
+	fn bind_addr() {
+		let config: ServerConfig = basic_config();
 
 		assert_eq!(
-			config.host(),
-			&std::net::IpAddr::V4(std::net::Ipv4Addr::new(127, 0, 0, 1))
+			config.bind_addr(),
+			SocketAddr::new(basic_config_ip_addr(), basic_config_port())
 		);
 	}
 }
