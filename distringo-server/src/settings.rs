@@ -67,9 +67,9 @@ pub struct AppConfig {
 	#[serde(deserialize_with = "de_version")]
 	version: Option<semver::Version>,
 	server: ServerConfig,
-	datasets: Option<DatasetsConfig>,
+	datasets: DatasetsConfig,
 	shapefiles: ShapefilesConfig,
-	sessions: Option<SessionsConfig>,
+	sessions: SessionsConfig,
 }
 
 impl AppConfig {
@@ -81,7 +81,7 @@ impl AppConfig {
 		&self.server
 	}
 
-	fn datasets(&self) -> &Option<DatasetsConfig> {
+	pub fn datasets(&self) -> &DatasetsConfig {
 		&self.datasets
 	}
 
@@ -89,13 +89,16 @@ impl AppConfig {
 		&self.shapefiles
 	}
 
-	fn sessions(&self) -> &Option<SessionsConfig> {
+	pub fn sessions(&self) -> &SessionsConfig {
 		&self.sessions
 	}
 }
 
 #[derive(serde::Deserialize, Default)]
-struct DatasetsConfig {}
+pub struct DatasetsConfig(HashMap<String, DatasetConfig>);
+
+#[derive(serde::Deserialize, Default)]
+pub struct DatasetConfig {}
 
 // TODO: Move into shapefiles route section
 #[derive(Debug, serde::Deserialize, Default)]
@@ -113,4 +116,7 @@ pub enum ShapefileType {
 }
 
 #[derive(serde::Deserialize, Default)]
-struct SessionsConfig {}
+pub struct SessionsConfig(HashMap<String, SessionConfig>);
+
+#[derive(serde::Deserialize, Default)]
+pub struct SessionConfig {}
