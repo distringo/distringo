@@ -1,8 +1,11 @@
 use core::{fmt, str::FromStr};
 
-use std::{collections::HashMap, net::IpAddr};
+use std::collections::HashMap;
 
 use serde::de;
+
+mod server;
+pub use server::*;
 
 // version: "0.0.0"
 //
@@ -88,31 +91,6 @@ impl AppConfig {
 
 	fn sessions(&self) -> &Option<SessionsConfig> {
 		&self.sessions
-	}
-}
-
-#[derive(serde::Deserialize)]
-pub struct ServerConfig {
-	host: IpAddr,
-	port: u16,
-}
-
-impl Default for ServerConfig {
-	fn default() -> Self {
-		Self {
-			host: IpAddr::V6(std::net::Ipv6Addr::from([0; 16])),
-			port: 2020_u16,
-		}
-	}
-}
-
-impl ServerConfig {
-	pub fn host(&self) -> &IpAddr {
-		&self.host
-	}
-
-	pub fn port(&self) -> &u16 {
-		&self.port
 	}
 }
 
