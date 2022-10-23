@@ -32,6 +32,19 @@ pub(crate) fn router(config: &crate::settings::ShapefilesConfig) -> Router {
 		entries: HashMap::new(),
 	};
 
+	tracing::trace!("initializing shapefile database");
+
+	let shapefiles = config.get_table("shapefiles");
+
+	match shapefiles {
+		Ok(shapefiles) => {
+			for (key, shapefile_config) in shapefiles {
+				tracing::debug!(id = key, "loading shapefile from {:?}", shapefile_config);
+			}
+		}
+		Err(err) => tracing::warn!(error = %err, "error getting shapefiles from configuration"),
+	};
+
 	let db = Box::leak(Box::new(db));
 
 	Router::new()
