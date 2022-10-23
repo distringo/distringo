@@ -101,7 +101,7 @@ jobs:
           rustup toolchain install ${{ matrix.rust }} --component llvm-tools-preview
           rustup default ${{ matrix.rust }}
       - name: Install cargo-llvm-cov
-        run: cargo install cargo-llvm-cov --version=0.4.14
+        run: cargo install cargo-llvm-cov --version=0.5.0
       - uses: actions/checkout@v1
       - name: Run cargo-llvm-cov
         run: >
