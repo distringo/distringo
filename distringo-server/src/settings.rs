@@ -104,6 +104,12 @@ pub struct DatasetConfig {}
 #[derive(Debug, serde::Deserialize, Default)]
 pub struct ShapefilesConfig(HashMap<String, ShapefileConfig>);
 
+impl core::convert::AsRef<HashMap<String, ShapefileConfig>> for ShapefilesConfig {
+	fn as_ref(&self) -> &HashMap<String, ShapefileConfig> {
+		&self.0
+	}
+}
+
 #[derive(Debug, serde::Deserialize, Default)]
 pub struct ShapefileConfig {
 	ty: Option<ShapefileType>,
