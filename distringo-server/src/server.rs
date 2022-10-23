@@ -51,7 +51,7 @@ impl ExecutionPlan {
 			.expect("internally-generated version requirement was invalid");
 
 		if let Some(version) = version {
-			if requirement.matches(&version) {
+			if requirement.matches(version) {
 				Ok(())
 			} else {
 				Err(AppConfigError::InvalidVersion)
