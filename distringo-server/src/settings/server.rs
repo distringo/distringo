@@ -24,3 +24,38 @@ impl ServerConfig {
 		&self.port
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::ServerConfig;
+
+	#[cfg(test)]
+	mod default {
+		use super::ServerConfig;
+
+		#[test]
+		fn default_is_localhost_2020() {
+			let default = ServerConfig::default();
+			assert_eq!(
+				default.host,
+				"::"
+					.parse::<std::net::Ipv6Addr>()
+					.expect("hard-coded strings should parse")
+			);
+			assert_eq!(default.port, 2020);
+		}
+	}
+
+	#[test]
+	fn host_works() {
+		let config: ServerConfig = ServerConfig {
+			host: std::net::IpAddr::V4(std::net::Ipv4Addr::new(127, 0, 0, 1)),
+			port: 0_16,
+		};
+
+		assert_eq!(
+			config.host(),
+			&std::net::IpAddr::V4(std::net::Ipv4Addr::new(127, 0, 0, 1))
+		);
+	}
+}
