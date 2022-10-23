@@ -5,6 +5,8 @@
 
 pub mod server;
 
+pub mod settings;
+
 /// Get the settings from defaults, the environment, and the config file.
 fn get_settings() -> core::result::Result<config::Config, config::ConfigError> {
 	use config::{builder::DefaultState, Config, ConfigBuilder, Environment, File};
