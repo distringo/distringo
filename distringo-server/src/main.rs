@@ -5,6 +5,8 @@
 
 pub mod server;
 
+pub mod settings;
+
 /// Get the settings from defaults, the environment, and the config file.
 fn get_settings() -> core::result::Result<config::Config, config::ConfigError> {
 	use config::{builder::DefaultState, Config, ConfigBuilder, Environment, File};
@@ -59,7 +61,7 @@ async fn main() -> Result<()> {
 		tracing_subscriber::fmt().with_env_filter(filter).init();
 	}
 
-	let settings = get_settings()?;
+	let settings: settings::AppConfig = get_settings()?.try_deserialize()?;
 
 	let mut plan: server::ExecutionPlan = server::ExecutionPlan::from(settings);
 	plan.validate().await?;

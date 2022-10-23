@@ -1,9 +1,6 @@
-use std::{
-	collections::HashMap,
-	net::{IpAddr, SocketAddr},
-};
+use std::net::SocketAddr;
 
-use crate::Result;
+use crate::{settings::AppConfig, Result};
 
 mod routes;
 
@@ -18,34 +15,29 @@ pub enum AppConfigError {
 	InvalidVersion,
 }
 
-type DatasetId = String;
-
-#[derive(Default)]
 pub struct ExecutionPlan {
-	config: config::Config,
-	datasets: HashMap<DatasetId, ()>,
+	config: AppConfig,
 }
 
-impl From<config::Config> for ExecutionPlan {
-	fn from(config: config::Config) -> Self {
-		Self {
-			config,
-			..Default::default()
-		}
+impl From<AppConfig> for ExecutionPlan {
+	fn from(config: AppConfig) -> Self {
+		Self { config }
 	}
 }
 
+const CONFIG_VERSION_REQUIREMENT: &str = "~0.0.0";
+
 impl ExecutionPlan {
-	fn validate_version(version: &str) -> Result<(), AppConfigError> {
-		const VERSION_REQUIREMENT: &str = "~0.0.0";
-
-		let requirement = semver::VersionReq::parse(VERSION_REQUIREMENT)
-			.expect("internally-generated version requirement was invalid");
-
-		let version: semver::Version = version.parse()?;
-
-		if requirement.matches(&version) {
-			Ok(())
+	fn validate_version(
+		version: &Option<semver::Version>,
+		requirement: semver::VersionReq,
+	) -> Result<(), AppConfigError> {
+		if let Some(version) = version {
+			if requirement.matches(version) {
+				Ok(())
+			} else {
+				Err(AppConfigError::InvalidVersion)
+			}
 		} else {
 			Err(AppConfigError::InvalidVersion)
 		}
@@ -54,19 +46,8 @@ impl ExecutionPlan {
 	pub async fn validate(&self) -> Result<(), AppConfigError> {
 		let config = &self.config;
 
-		// Verify that the version is valid.
-		let config_version = config.get_string("version")?;
-		Self::validate_version(&config_version)?;
-
-		// Load up all the dataset configurations.
-		for (identifier, value) in config.get_table("datasets")? {
-			println!("{:?}, {:?}", identifier, value);
-		}
-
-		// Load up all the shapefile cofigurations.
-		for (identifier, value) in config.get_table("shapefiles")? {
-			println!("{:?}, {:?}", identifier, value);
-		}
+		// Verify that the version of the configuration is valid.
+		Self::validate_version(config.version(), CONFIG_VERSION_REQUIREMENT.parse()?)?;
 
 		Ok(())
 	}
@@ -80,32 +61,14 @@ impl ExecutionPlan {
 		Ok(())
 	}
 
-	fn bind_addr(&self) -> Result<SocketAddr> {
-		let host: IpAddr = self
-			.config
-			.get_string("server.host")?
-			.parse()
-			.map_err(|_| crate::RuntimeError::InvalidServerHost)?;
-
-		let port: u16 = self
-			.config
-			.get_int("server.port")?
-			.try_into()
-			.map_err(|_| crate::RuntimeError::InvalidServerPort)?;
-
-		Ok(SocketAddr::new(host, port))
-	}
-
 	pub async fn execute(&mut self) -> Result<()> {
 		tracing::trace!("Executing Execution Plan");
 
-		let config: &config::Config = &self.config;
+		let socket = self.config.server().bind_addr();
 
-		let socket = self.bind_addr()?;
+		let router = routes::app_router(&self.config)?;
 
-		tracing::trace!(?socket);
-
-		let router = routes::app_router(config)?;
+		tracing::info!(?socket, "starting server");
 
 		axum::Server::bind(&socket)
 			.serve(router.into_make_service())
@@ -125,14 +88,29 @@ mod execution_plan {
 
 		#[test]
 		fn valid_version() {
-			let config_version = "0.0.0";
-			assert!(ExecutionPlan::validate_version(config_version).is_ok());
+			let version = Some("0.0.0".parse().expect("hard-coded input should parse"));
+			let requirement = "~0.0.0"
+				.parse()
+				.expect("hard-coded requirement should parse");
+			assert!(ExecutionPlan::validate_version(&version, requirement).is_ok());
 		}
 
 		#[test]
-		fn non_version_err() {
-			let config_version = "not a version";
-			assert!(ExecutionPlan::validate_version(config_version).is_err());
+		fn version_that_does_not_meet_requirements() {
+			let version = Some("4.0.0".parse().expect("hard-coded input should parse"));
+			let requirement = "~0.0.0"
+				.parse()
+				.expect("hard-coded requirement should parse");
+			assert!(ExecutionPlan::validate_version(&version, requirement).is_err());
+		}
+
+		#[test]
+		fn no_version_does_not_meet_requirements() {
+			let version = None;
+			let requirement = "~0.0.0"
+				.parse()
+				.expect("hard-coded requirement should parse");
+			assert!(ExecutionPlan::validate_version(&version, requirement).is_err());
 		}
 	}
 }
