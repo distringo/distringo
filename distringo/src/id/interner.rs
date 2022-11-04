@@ -39,7 +39,7 @@ impl<'i> GeoIdInterner<'i> {
 		// Begin critical section. Insert string, then check len.
 		self.strings.push(string.clone());
 
-		let symbol = self.strings.len() as usize - 1;
+		let symbol: usize = self.strings.len() - 1;
 		// End critical section. Len is now a valid name.
 
 		let symbol: u32 = symbol as u32;
