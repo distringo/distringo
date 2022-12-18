@@ -21,7 +21,7 @@ fn write_adjacency_map(file: &mut File, adjacency_map: BTreeMap<&str, BTreeSet<&
 
 	for (lhs, neighbors) in adjacency_map {
 		for rhs in neighbors {
-			writeln!(file, "{},{}", lhs, rhs).expect("failed to write output");
+			writeln!(file, "{lhs},{rhs}").expect("failed to write output");
 		}
 	}
 }

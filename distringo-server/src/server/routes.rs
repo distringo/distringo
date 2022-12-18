@@ -13,7 +13,7 @@ async fn ping() -> Result<String, StatusCode> {
 
 #[tracing::instrument]
 async fn router_fallback(uri: Uri) -> impl IntoResponse {
-	(StatusCode::NOT_FOUND, format!("uri {} not found", uri))
+	(StatusCode::NOT_FOUND, format!("uri {uri} not found"))
 }
 
 /// Constructs a Service that can serve as a fallback.
@@ -23,7 +23,7 @@ fn static_files_handler() -> MethodRouter {
 	get_service(serve_dir).handle_error(|error: std::io::Error| async move {
 		(
 			StatusCode::INTERNAL_SERVER_ERROR,
-			format!("Unhandled internal server error in ServeDir: {}", error),
+			format!("Unhandled internal server error in ServeDir: {error}"),
 		)
 	})
 }
@@ -34,7 +34,7 @@ async fn handle_error(error: tower::BoxError) -> Result<impl IntoResponse, impl 
 	} else {
 		Err((
 			StatusCode::INTERNAL_SERVER_ERROR,
-			format!("Unhandled internal error: {}", error),
+			format!("Unhandled internal error: {error}"),
 		))
 	}
 }
