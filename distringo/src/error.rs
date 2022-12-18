@@ -18,10 +18,10 @@ pub enum Error {
 impl core::fmt::Display for Error {
 	fn fmt(&self, f: &mut core::fmt::Formatter) -> core::result::Result<(), std::fmt::Error> {
 		match self {
-			Error::Io(inner) => writeln!(f, "io error: {}", inner),
-			Error::Csv(inner) => writeln!(f, "csv error: {}", inner),
+			Error::Io(inner) => writeln!(f, "io error: {inner}"),
+			Error::Csv(inner) => writeln!(f, "csv error: {inner}"),
 
-			Error::GeoJson(inner) => writeln!(f, "geojson error: {}", inner),
+			Error::GeoJson(inner) => writeln!(f, "geojson error: {inner}"),
 			_ => todo!(),
 		}
 	}
