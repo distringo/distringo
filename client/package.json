@@ -28,7 +28,7 @@
 		"react-leaflet": "4.2.0"
 	},
 	"devDependencies": {
-		"@typescript-eslint/eslint-plugin": "^5.39.0",
+		"@typescript-eslint/eslint-plugin": "^5.48.1",
 		"@typescript-eslint/parser": "^5.39.0",
 		"copy-webpack-plugin": "^11.0.0",
 		"eslint": "^8.25.0",
