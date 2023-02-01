@@ -8,5 +8,8 @@
     ":maintainLockFilesWeekly",
     // Pin github-actions with a digest to avoid surprises when they update
     "helpers:pinGitHubActionDigests"
-  ]
+  ],
+  "prConcurrentLimit": 0,
+  "prHourlyLimit": 0,
+  "stabilityDays": 1
 }
