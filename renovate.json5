@@ -9,8 +9,8 @@
     // Pin github-actions with a digest to avoid surprises when they update
     "helpers:pinGitHubActionDigests"
     // include ts-jest and @types/jest in jestjs grouped updates
-    'group:jestPlusTSJest',
-    'group:jestPlusTypes',
+    "group:jestPlusTSJest",
+    "group:jestPlusTypes",
   ],
   "prConcurrentLimit": 0,
   "prHourlyLimit": 0,
