@@ -7,7 +7,7 @@
     // Update lockfile versions weekly
     ":maintainLockFilesWeekly",
     // Pin github-actions with a digest to avoid surprises when they update
-    "helpers:pinGitHubActionDigests"
+    "helpers:pinGitHubActionDigests",
     // include ts-jest and @types/jest in jestjs grouped updates
     "group:jestPlusTSJest",
     "group:jestPlusTypes",
