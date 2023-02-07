@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3
         with:
           node-version: ${{ matrix.node }}
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
       - name: Install dependencies
         working-directory: client
         run: npm ci
@@ -40,7 +40,7 @@ jobs:
         run: |
           rustup toolchain install ${{ matrix.rust }} --component rustfmt clippy
           rustup default ${{ matrix.rust }}
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
       - name: Run rustfmt
         run: |
           cargo fmt --all -- --check
@@ -59,7 +59,7 @@ jobs:
       - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3
         with:
           node-version: ${{ matrix.node }}
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
       - name: Install dependencies
         working-directory: client
         run: npm ci
@@ -84,7 +84,7 @@ jobs:
         run: |
           rustup toolchain install ${{ matrix.rust }}
           rustup default ${{ matrix.rust }}
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
       - name: Run cargo test
         run: |
           cargo test --workspace --all-features --all-targets --no-fail-fast
@@ -102,7 +102,7 @@ jobs:
           rustup default ${{ matrix.rust }}
       - name: Install cargo-llvm-cov
         run: cargo install cargo-llvm-cov --version=0.5.0
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
       - name: Run cargo-llvm-cov
         run: >
           cargo llvm-cov
