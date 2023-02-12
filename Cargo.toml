@@ -1,6 +1,7 @@
 [workspace]
 members = [
 	"distringo",
+	"distringo-census",
 	"distringo-server",
 	"palapelify",
 ]
