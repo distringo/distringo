@@ -16,7 +16,7 @@ serde_json = "1.0.93"
 serde_yaml = "0.9.17"
 
 # Project-specific data structures and dependencies
-csv = "1.1.6"
+csv = "1.2.0"
 geo = "0.23.1"
 geojson = "0.24.0"
 regex = "1.7.1"
