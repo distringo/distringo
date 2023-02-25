@@ -20,12 +20,7 @@ async fn router_fallback(uri: Uri) -> impl IntoResponse {
 fn static_files_handler() -> MethodRouter {
 	let serve_dir = ServeDir::new("dist");
 
-	get_service(serve_dir).handle_error(|error: std::io::Error| async move {
-		(
-			StatusCode::INTERNAL_SERVER_ERROR,
-			format!("Unhandled internal server error in ServeDir: {error}"),
-		)
-	})
+	get_service(serve_dir)
 }
 
 async fn handle_error(error: tower::BoxError) -> Result<impl IntoResponse, impl IntoResponse> {
