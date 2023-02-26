@@ -291,6 +291,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "distringo-census"
+version = "0.1.0"
+
+[[package]]
 name = "distringo-server"
 version = "0.1.0"
 dependencies = [
