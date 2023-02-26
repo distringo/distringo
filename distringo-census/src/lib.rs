@@ -2,3 +2,5 @@
 #![warn(clippy::cargo)]
 #![warn(clippy::pedantic)]
 #![warn(clippy::cognitive_complexity)]
+
+mod shapefile;
