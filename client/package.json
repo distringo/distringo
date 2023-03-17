@@ -21,7 +21,7 @@
 	"homepage": "https://github.com/rye/distringo#readme",
 	"dependencies": {
 		"@types/geojson": "^7946.0.8",
-		"@types/leaflet": "^1.7.10",
+		"@types/leaflet": "^1.9.3",
 		"idb": "^7.1.0",
 		"leaflet": "^1.8.0",
 		"preact": "^10.10.6",
