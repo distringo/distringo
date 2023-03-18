@@ -1,3 +1,5 @@
+#![warn(rust_2018_idioms, future_incompatible)]
+
 pub fn add(left: usize, right: usize) -> usize {
 	left + right
 }
