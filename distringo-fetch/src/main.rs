@@ -7,15 +7,21 @@ async fn repl() {
 	let mut stdin = tokio::io::BufReader::new(stdin);
 
 	loop {
-		tracing::info!("Reading");
+		tracing::info!("reading input");
+
 		// Read a line of input.
 		let mut buffer = Vec::new();
 		let result = stdin.read_until(b'\n', &mut buffer).await;
 
-		if let Ok(bytes_read) = result {
-			tracing::info!("read {bytes_read} bytes");
-		} else {
-			tracing::info!("error: {:?}", result);
+		match result {
+			Ok(0) => {
+				tracing::info!("EOF, bye!");
+				break;
+			}
+			Ok(bytes_read) => {
+				tracing::info!("read {bytes_read} bytes");
+			}
+			Err(err) => tracing::error!(?err, "error!"),
 		}
 	}
 }
