@@ -1,4 +1,6 @@
 #![warn(rust_2018_idioms, future_incompatible)]
-fn main() {
+
+#[tokio::main]
+async fn main() {
 	println!("Hello, world!");
 }
