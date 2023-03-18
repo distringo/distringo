@@ -1,7 +1,7 @@
 [workspace]
 members = [
-	"distringo",
 	"distringo-census",
-	"distringo-server",
-	"palapelify",
+	"distringo-fetch",
+	"distringo-shapefile",
+	"distringo-web",
 ]
