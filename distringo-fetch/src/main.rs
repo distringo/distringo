@@ -2,12 +2,38 @@
 
 use tokio::io::AsyncBufReadExt;
 
+#[derive(Default)]
+struct ReplContext {
+	banner_seen: bool,
+}
+
+async fn menu() {}
+
+async fn prompt(ctx: &mut ReplContext) {
+	use std::io::{stdout, Write};
+
+	if !ctx.banner_seen {
+		println!("banner");
+		ctx.banner_seen = true;
+	}
+
+	menu().await;
+
+	print!("> ");
+
+	stdout().flush().expect("error!");
+}
+
 async fn repl() {
 	let stdin = tokio::io::stdin();
 	let mut stdin = tokio::io::BufReader::new(stdin);
+	let mut prompt_ctx = ReplContext::default();
 
 	loop {
 		tracing::info!("reading input");
+
+		// Display a prompt.
+		prompt(&mut prompt_ctx).await;
 
 		// Read a line of input.
 		let mut buffer = Vec::new();
@@ -31,8 +57,6 @@ async fn main() {
 	{
 		tracing_subscriber::fmt().init();
 	}
-
-	println!("Hello, world!");
 
 	if atty::is(atty::Stream::Stdin) && atty::is(atty::Stream::Stdout) {
 		repl().await
