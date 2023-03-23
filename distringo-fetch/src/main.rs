@@ -1,5 +1,7 @@
 #![warn(rust_2018_idioms, future_incompatible)]
 
+use core::str::{self, FromStr};
+
 use tokio::io::AsyncBufReadExt;
 
 use tracing::{error, info, warn};
@@ -9,6 +11,25 @@ struct Repl {
 	banner_seen: bool,
 	history: Vec<String>,
 	exiting: bool,
+}
+
+#[derive(Debug)]
+enum ReplCommand {
+	Exit,
+}
+
+impl FromStr for ReplCommand {
+	type Err = String;
+
+	fn from_str(s: &str) -> Result<Self, Self::Err> {
+		let lowercased = s.trim().to_lowercase();
+		let split: Vec<&str> = lowercased.split_whitespace().collect();
+
+		match &split[..] {
+			&["exit"] => Ok(ReplCommand::Exit),
+			_ => Err(format!("unknown input {lowercased}")),
+		}
+	}
 }
 
 impl Repl {
@@ -38,9 +59,9 @@ impl Repl {
 	async fn command(&mut self, input: &str) {
 		self.history.push(input.to_string());
 
-		match input.to_lowercase().trim() {
-			"exit" => self.exiting = true,
-			command => warn!("unknown command {command}"),
+		match input.parse() {
+			Ok(ReplCommand::Exit) => self.exiting = true,
+			Err(error) => warn!("{error}"),
 		}
 	}
 
@@ -67,7 +88,7 @@ impl Repl {
 					break;
 				}
 
-				match core::str::from_utf8(&buffer) {
+				match str::from_utf8(&buffer) {
 					Ok(input) => self.command(input).await,
 					Err(err) => error!(
 						?err,
