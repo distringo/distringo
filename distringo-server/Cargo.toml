@@ -19,7 +19,7 @@ serde_yaml = "0.9.19"
 csv = "1.2.1"
 geo = "0.24.1"
 geojson = "0.24.0"
-regex = "1.7.1"
+regex = "1.7.3"
 semver = "1.0.17"
 
 # Runtime
