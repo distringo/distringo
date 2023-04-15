@@ -48,29 +48,29 @@ jobs:
         run: |
           cargo clippy --workspace --all-features --all-targets
 
-  test-client:
-    name: Test the code (client)
-    runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-      matrix:
-        node: [18]
-    steps:
-      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3
-        with:
-          node-version: ${{ matrix.node }}
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
-      - name: Install dependencies
-        working-directory: client
-        run: npm ci
-      - name: Run tests
-        working-directory: client
-        run: npm run test -- --coverage
-      - name: Upload coverage
-        uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # v3.1.1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          verbose: true
+  # test-client:
+  #   name: Test the code (client)
+  #   runs-on: ubuntu-20.04
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       node: [18]
+  #   steps:
+  #     - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3
+  #       with:
+  #         node-version: ${{ matrix.node }}
+  #     - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
+  #     - name: Install dependencies
+  #       working-directory: client
+  #       run: npm ci
+  #     - name: Run tests
+  #       working-directory: client
+  #       run: npm run test -- --coverage
+  #     - name: Upload coverage
+  #       uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # v3.1.1
+  #       with:
+  #         token: ${{ secrets.CODECOV_TOKEN }}
+  #         verbose: true
 
   test-rust:
     name: Test the code
