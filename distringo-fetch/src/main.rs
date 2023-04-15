@@ -11,7 +11,11 @@ struct Repl {
 	banner_seen: bool,
 	history: Vec<String>,
 	exiting: bool,
+	mode: Option<ReplMode>,
 }
+
+#[derive(Debug)]
+enum ReplMode {}
 
 #[derive(Debug)]
 enum ReplCommand {
@@ -27,7 +31,7 @@ impl FromStr for ReplCommand {
 
 		match &split[..] {
 			&["exit"] => Ok(ReplCommand::Exit),
-			_ => Err(format!("unknown input {lowercased}")),
+			_ => Err(format!("unknown command {lowercased}")),
 		}
 	}
 }
@@ -82,12 +86,14 @@ impl Repl {
 
 			// Check the result and execute a command if possible.
 			if let Ok(bytes) = result {
+				// If no bytes were read, that was EOF (^D).
 				if bytes == 0 {
-					print!("\r");
+					println!();
 					self.exiting = true;
 					break;
 				}
 
+				// Else, convert to a string.
 				match str::from_utf8(&buffer) {
 					Ok(input) => self.command(input).await,
 					Err(err) => error!(
