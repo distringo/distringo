@@ -40,7 +40,7 @@ jobs:
         run: |
           rustup toolchain install ${{ matrix.rust }} --component rustfmt clippy
           rustup default ${{ matrix.rust }}
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3
       - name: Run rustfmt
         run: |
           cargo fmt --all -- --check
@@ -84,7 +84,7 @@ jobs:
         run: |
           rustup toolchain install ${{ matrix.rust }}
           rustup default ${{ matrix.rust }}
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3
       - name: Run cargo test
         run: |
           cargo test --workspace --all-features --all-targets --no-fail-fast
@@ -102,7 +102,7 @@ jobs:
           rustup default ${{ matrix.rust }}
       - name: Install cargo-llvm-cov
         run: cargo install cargo-llvm-cov --version=0.5.0
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3
       - name: Run cargo-llvm-cov
         run: >
           cargo llvm-cov
