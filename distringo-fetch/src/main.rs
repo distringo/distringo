@@ -14,6 +14,28 @@ struct Repl {
 	mode: Option<ReplMode>,
 }
 
+#[cfg(test)]
+mod repl {
+	use super::Repl;
+
+	#[test]
+	fn default() {
+		use core::mem::discriminant;
+
+		let Repl {
+			banner_seen,
+			history,
+			exiting,
+			mode,
+		} = Repl::default();
+
+		assert_eq!(banner_seen, false);
+		assert_eq!(history, Vec::<String>::new());
+		assert_eq!(exiting, false);
+		assert_eq!(discriminant(&mode), discriminant(&None));
+	}
+}
+
 #[derive(Debug)]
 enum ReplMode {}
 
