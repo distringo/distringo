@@ -1,14 +1,8 @@
-pub fn add(left: usize, right: usize) -> usize {
-	left + right
-}
+//! Libraries for interacting with U.S. Census sites.
 
-#[cfg(test)]
-mod tests {
-	use super::*;
+mod ftp;
 
-	#[test]
-	fn it_works() {
-		let result = add(2, 2);
-		assert_eq!(result, 4);
-	}
-}
+#[cfg(feature = "census-ftp")]
+mod us_census;
+#[cfg(feature = "census-ftp")]
+pub use us_census::get_recursive_directory_listing;
