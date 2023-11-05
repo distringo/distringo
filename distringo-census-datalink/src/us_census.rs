@@ -1,10 +1,11 @@
-use std::collections::VecDeque;
+use std::{collections::VecDeque, fs::File, io::Write, thread::sleep};
 
 pub async fn get_recursive_directory_listing() -> impl core::fmt::Debug {
 	println!("connecting...");
 
 	let mut ftp_stream = suppaftp::FtpStream::connect("ftp2.census.gov:21")
-		.unwrap_or_else(|err| panic!("no connection... {err}"));
+		.unwrap_or_else(|err| panic!("no connection... {err}"))
+		.active_mode();
 
 	println!("logging in");
 
@@ -24,9 +25,21 @@ pub async fn get_recursive_directory_listing() -> impl core::fmt::Debug {
 		"programs-surveys".to_string(),
 		"decennial".to_string(),
 		"2020".to_string(),
+		"data".to_string(),
+		"01-Redistricting_File--PL_94-171".to_string(),
 	]]);
 
+	let mut file = File::create("./listing.txt").expect("failed to open listing file");
+
 	while let Some(next) = queue.pop_front() {
+		println!("sleeping temporarily...");
+
+		sleep(core::time::Duration::from_millis(100));
+
+		println!("woke up...");
+
+		let mut string: String = String::default();
+
 		let cur_dir = match next.len() {
 			0 => None,
 			_ => Some(next.join("/")),
@@ -34,9 +47,18 @@ pub async fn get_recursive_directory_listing() -> impl core::fmt::Debug {
 
 		println!("scanning dir {:?}", next);
 
-		let listing = ftp_stream.list(cur_dir.as_deref()).expect(&format!(
-			"expected good result when requesting listing for next dir {next:?}"
-		));
+		let listing = match ftp_stream.list(cur_dir.as_deref()) {
+			Ok(listing) => listing,
+			Err(asdf) => {
+				eprintln!("error: {asdf}; placing back on queue");
+				queue.push_back(next);
+				continue;
+			}
+		};
+
+		// let listing = ftp_stream.list(cur_dir.as_deref()).expect(&format!(
+		// 	"expected good result when requesting listing for next dir {next:?}"
+		// ));
 
 		println!("got listing of {} entries", listing.len());
 
@@ -84,15 +106,6 @@ pub async fn get_recursive_directory_listing() -> impl core::fmt::Debug {
 				name[0..].join(" ")
 			};
 
-			// match split.next() {
-			// 	None => {}
-			// 	Some("->") => {
-			// 		let _link_target = split.next();
-			// 		assert_eq!(split.next(), None);
-			// 	}
-			// 	Some(value) => ,
-			// }
-
 			#[derive(PartialEq)]
 			enum EntryType {
 				Directory,
@@ -117,13 +130,23 @@ pub async fn get_recursive_directory_listing() -> impl core::fmt::Debug {
 			}
 		}
 
-		dbg!(&files, &directories, &others);
+		// dbg!(&files, &directories, &others);
+
+		string = format!("{string}{}:", cur_dir.expect("expected dirname"));
 
 		for directory in directories {
+			string = format!("{string}\n{}", directory);
+
 			let mut path = next.clone();
 			path.push(directory);
 			queue.push_back(path);
 		}
+
+		for file in files {
+			string = format!("{string}\n{}", file);
+		}
+
+		writeln!(file, "{string}\n").expect("foo");
 	}
 
 	//
