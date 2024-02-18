@@ -1,0 +1,16 @@
+[package]
+name = "distringo-census-dataset"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+pl = []
+default = ["pl"]
+
+[dependencies]
+tokio = { version = "1", features = [
+	"fs",
+	"io-util",
+	"macros",
+	"rt-multi-thread",
+] }
