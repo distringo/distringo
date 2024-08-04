@@ -1,17 +1,17 @@
 {
-  "name": "distringo-viewer",
-  "version": "0.0.0",
-  "description": "Geometry viewer for use with debugging",
-  "main": "main.js",
-  "scripts": {
-    "start": "electron ."
-  },
-  "author": "",
-  "license": "MIT",
-  "devDependencies": {
-    "electron": "^31.1.0"
-  },
-  "dependencies": {
-    "leaflet": "^1.9.4"
-  }
+	"name": "distringo-viewer",
+	"version": "0.0.0",
+	"description": "Geometry viewer for use with debugging",
+	"main": "app/main.js",
+	"scripts": {
+		"start": "electron ."
+	},
+	"author": "",
+	"license": "MIT",
+	"devDependencies": {
+		"electron": "^31.1.0"
+	},
+	"dependencies": {
+		"leaflet": "^1.9.4"
+	}
 }
