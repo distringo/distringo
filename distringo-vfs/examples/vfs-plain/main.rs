@@ -11,5 +11,8 @@ fn this_dir() -> PathBuf {
 }
 
 fn main() {
-	let _root_dir = this_dir();
+	let root_dir = this_dir();
+
+	let mut vfs = distringo_vfs::Vfs::empty();
+	vfs.add_root_from_dir(root_dir);
 }
