@@ -113,9 +113,9 @@ pub async fn get_recursive_directory_listing() -> impl core::fmt::Debug {
 				Other,
 			}
 
-			let entry_type = match ty {
-				&[b'd'] => EntryType::Directory,
-				&[b'-'] => EntryType::File,
+			let entry_type = match *ty {
+				[b'd'] => EntryType::Directory,
+				[b'-'] => EntryType::File,
 				_ => EntryType::Other,
 			};
 
